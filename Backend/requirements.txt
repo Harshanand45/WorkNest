@@ -6,3 +6,4 @@ python-multipart
 aiofiles
 email-validator
 pyodbc
+python-jose
