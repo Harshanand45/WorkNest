@@ -47,7 +47,7 @@ export interface PaginatedTaskResponse {
   providedIn: 'root'
 })
 export class TaskService {
-  private baseUrl = 'http://localhost:8000';
+  private baseUrl = 'https://worknest-backend-3goy.onrender.com';
 
   constructor(private http: HttpClient) {}
 

@@ -28,7 +28,7 @@ export interface Employee {
 })
 export class WorkService {
 
-   private baseUrl = 'http://localhost:8000'; // replace with your actual backend URL
+   private baseUrl = 'https://worknest-backend-3goy.onrender.com'; // replace with your actual backend URL
 
   constructor(private http: HttpClient) {}
 

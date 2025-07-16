@@ -59,7 +59,7 @@ export interface ProjectPaginationRequest {
   providedIn: 'root'
 })
 export class ProjectService {
-  private apiUrl = 'http://localhost:8000'; // ✅ Change this to your FastAPI base URL
+  private apiUrl = 'https://worknest-backend-3goy.onrender.com'; // ✅ Change this to your FastAPI base URL
 
   constructor(private http: HttpClient) {}
 

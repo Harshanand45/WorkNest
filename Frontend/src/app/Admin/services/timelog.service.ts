@@ -18,7 +18,7 @@ export interface Timelog {
 
 @Injectable({ providedIn: 'root' })
 export class TimeLogService {
-  private baseUrl = 'http://localhost:8000';
+  private baseUrl = 'https://worknest-backend-3goy.onrender.com';
 
   constructor(private http: HttpClient) {}
 

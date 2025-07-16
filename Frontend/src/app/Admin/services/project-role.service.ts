@@ -31,7 +31,7 @@ export interface ProjectRoleOut {
   providedIn: 'root',
 })
 export class ProjectRoleService {
-  private baseUrl = 'http://localhost:8000';
+  private baseUrl = 'https://worknest-backend-3goy.onrender.com';
 
   constructor(private http: HttpClient) {}
 

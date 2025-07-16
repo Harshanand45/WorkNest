@@ -37,7 +37,7 @@ export interface RolePaginationRequest {
   providedIn: 'root'
 })
 export class RolesService {
-  private baseUrl = 'http://localhost:8000'; // Update to your actual FastAPI URL
+  private baseUrl = 'https://worknest-backend-3goy.onrender.com'; // Update to your actual FastAPI URL
 
   constructor(private http: HttpClient) {}
 

@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class UploadService {
-  private uploadUrl = 'http://localhost:8000/upload'; // FastAPI upload endpoint
+  private uploadUrl = 'https://worknest-backend-3goy.onrender.com/upload'; // FastAPI upload endpoint
 
   constructor(private http: HttpClient) {}
 
