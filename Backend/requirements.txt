@@ -7,3 +7,4 @@ aiofiles
 email-validator
 pyodbc
 python-jose
+PyJWT
