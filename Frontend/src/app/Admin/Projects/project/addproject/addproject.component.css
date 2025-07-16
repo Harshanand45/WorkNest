@@ -1,0 +1,219 @@
+/* Base Container */
+form {
+  max-width: 860px;
+  margin: 40px auto;
+  padding: 32px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Headings */
+h2, h3 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #1f2937;
+  text-align: center;
+}
+
+/* Labels */
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Inputs, Selects, Textareas */
+input[type="text"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #6366f1;
+  background-color: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Multi-select */
+select[multiple] {
+  height: 140px;
+  background-color: #f9fafb;
+  border-radius: 10px;
+}
+
+/* Error Highlight */
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched {
+  border-color: #f87171;
+  background-color: #fef2f2;
+}
+
+/* Error Message */
+.error-message {
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: -10px;
+  margin-bottom: 12px;
+}
+
+/* Employee Assignment Block */
+.task-item {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  transition: box-shadow 0.25s ease-in-out;
+  position: relative;
+}
+
+.task-item:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* Remove Button */
+.remove-task-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.remove-task-btn:hover {
+  background-color: #b91c1c;
+}
+
+/* Add Employee Button */
+.add-task-btn {
+  background-color: #10b981;
+  color: white;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: 10px;
+  margin: 16px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-task-btn:hover {
+  background-color: #047857;
+}
+
+/* Submit Button */
+
+
+button[type="submit"]:hover {
+  background-color: #4338ca;
+}
+/* Add Employee Button */
+.add-employee-btn {
+  display: inline-block;
+  margin: 20px 0;
+  background-color: #0ea5e9; /* sky-blue */
+  color: white;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-employee-btn:hover {
+  background-color: #0284c7;
+}
+
+/* Remove Employee Button */
+.remove-employee-btn {
+  margin-top: 10px;
+  background-color: #ef4444; /* red */
+  color: white;
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.remove-employee-btn:hover {
+  background-color: #dc2626;
+}
+
+.employee-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  border: 1px solid #ccc;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.select-field {
+  flex: 1 1 45%;
+  min-width: 200px;
+}
+
+.add-employee-btn {
+  background-color: #0ea5e9;
+  color: white;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.add-employee-btn:hover {
+  background-color: #0284c7;
+}
+
+.remove-employee-btn {
+  background-color: #ef4444;
+  color: white;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+.remove-employee-btn:hover {
+  background-color: #dc2626;
+}

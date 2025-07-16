@@ -1,0 +1,131 @@
+.dashboard-wrapper {
+  max-width: 1230px;
+
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin: 0;
+}
+
+.chart-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 350px;
+  height: 350px;
+  
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.chart-carda {
+  flex: 1;
+  
+  min-width: 400px;
+  background: #fff;
+  border-radius: 1rem;
+   width: 350px;
+  height: 350px;
+  padding: 1.5rem;
+}
+
+.chart-heading {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.bar {
+  width: 100%;
+  max-height: 450px;
+}
+
+.select-button-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.native-dropdown {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin: 1.5rem;
+  max-width: 1230px;
+  margin: 0 auto;
+}
+
+
+/* Table Styling */
+p-table ::ng-deep .p-datatable-wrapper {
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+p-table ::ng-deep .p-datatable-thead > tr > th {
+  background-color: #f3f4f6;
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #d1d5db;
+}
+
+p-table ::ng-deep .p-datatable-tbody > tr > td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Priority Tags */
+.priority-tag {
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  color: #fff;
+  font-weight: 600;
+  text-transform: capitalize;
+  font-size: 0.875rem;
+}
+
+.priority-tag.low {
+  background-color: #91c788;
+}
+
+.priority-tag.medium {
+  background-color: #f4c430;
+}
+
+.priority-tag.high {
+  background-color: #e76f51;
+}
+
+/* Responsive Table (on smaller screens) */
+@media (max-width: 768px) {
+  .chart-card {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .card {
+    margin: 1rem 0.5rem;
+  }
+}

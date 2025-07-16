@@ -1,0 +1,32 @@
+<div *ngIf="task" class="task-detail-card">
+  <h2>#{{ task.TaskId }} - {{ task.Name }}</h2>
+
+  <p><strong>Priority:</strong>
+    <span class="priority {{ task.Priority.toLowerCase() }}">{{ task.Priority }}</span>
+  </p>
+<p><strong>Assigned To:</strong> {{ assignedEmployeeName }}</p>
+
+<p><strong>Project:</strong> {{ projectName }}</p>
+
+
+  <p><strong>Deadline:</strong> {{ task.Deadline | date: 'mediumDate' }}</p>
+  <p><strong>Status:</strong> {{ task.Status }}</p>
+
+  <p><strong>Description:</strong></p>
+  <div [innerHTML]="task.Description || 'No description provided.'"></div>
+
+  <div *ngIf="task.DocumentName || task.DocumentPath || task.DocumentUrl">
+    <p><strong>Documents:</strong></p>
+    <ul>
+      <li *ngIf="task.DocumentName">{{ task.DocumentName }}</li>
+      <li *ngIf="task.DocumentUrl">
+        <a [href]="task.DocumentUrl" target="_blank">Open Document</a>
+      </li>
+      <li *ngIf="task.DocumentPath">{{ task.DocumentPath }}</li>
+    </ul>
+  </div>
+</div>
+
+<div *ngIf="!task">
+  <p class="error-text">Task not found or failed to load.</p>
+</div>

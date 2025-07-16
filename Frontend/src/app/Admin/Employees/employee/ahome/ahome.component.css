@@ -1,0 +1,53 @@
+
+/* Table Styling */
+p-table ::ng-deep .p-datatable-wrapper {
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+p-table ::ng-deep .p-datatable-thead > tr > th {
+  background-color: #f3f4f6;
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #d1d5db;
+}
+
+p-table ::ng-deep .p-datatable-tbody > tr > td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Priority Tags */
+.priority-tag {
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  color: #fff;
+  font-weight: 600;
+  text-transform: capitalize;
+  font-size: 0.875rem;
+}
+
+.priority-tag.low {
+  background-color: #91c788;
+}
+
+.priority-tag.medium {
+  background-color: #f4c430;
+}
+
+.priority-tag.high {
+  background-color: #e76f51;
+}
+
+/* Responsive Table (on smaller screens) */
+@media (max-width: 768px) {
+  .chart-card {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .card {
+    margin: 1rem 0.5rem;
+  }
+}

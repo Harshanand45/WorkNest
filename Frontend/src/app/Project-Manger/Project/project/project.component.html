@@ -1,0 +1,30 @@
+<div class="project-table-container">
+  <div class="header-row">
+    <h2>Project List</h2>
+  </div>
+
+  <table class="project-table">
+    <thead>
+      <tr>
+        <th>Project Name</th>
+        <th>Project Manager</th>
+        <th>Start Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let project of projects">
+        <td>{{ project.Name }}</td>
+        <td>{{ getManagerName(project.ProjectManager) }}</td>
+        <td>{{ project.StartDate |date:'mediumDate' }}</td>
+        <td>{{ project.Status }}</td>
+        <td class="project-actions">
+          <button class="btn-view" (click)="viewProject(project.ProjectId)">View</button>
+      
+         
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

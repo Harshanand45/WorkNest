@@ -1,0 +1,68 @@
+<div class="login-wrapper">
+  <div class="login-box">
+    <!-- Left Side: Form -->
+    <div class="login-left">
+      <h2 class="login-heading">Login</h2>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+        <!-- Email -->
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+        />
+        <div
+          class="error"
+          *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
+        >
+          Email is required.
+        </div>
+
+      
+<label for="password">Password</label>
+<div class="password-wrapper">
+  <input
+    id="password"
+    [type]="showPassword ? 'text' : 'password'"
+    formControlName="password"
+    placeholder="Enter your password"
+  />
+  <i
+    class="fa"
+    [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+    (click)="togglePasswordVisibility()"
+  ></i>
+</div>
+
+
+<div
+  class="error"
+  *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
+>
+  Password is required .
+</div>
+
+        
+    <div class="error" *ngIf="loginError">
+  {{ loginError }}
+</div>
+
+
+        <!-- Submit Row -->
+        <div class="login-btn">
+          <div class="login-actions">
+            <button type="submit" >
+              Sign In <span>→</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right Side: Image -->
+    <div class="login-right">
+      <img src="/images/self-learning.png" alt="Login Illustration" />
+   
+</div>

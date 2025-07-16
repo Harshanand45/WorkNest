@@ -1,0 +1,100 @@
+<div *ngIf="task" class="task-detail-card">
+  <h2>#{{ task.TaskId }} - {{ task.Name }}</h2>
+
+  <p><strong>Priority:</strong>
+    <span class="priority {{ task.Priority | lowercase }}">{{ task.Priority }}</span>
+  </p>
+
+  <p><strong>Project:</strong> {{ projectName }}</p>
+  <p><strong>Deadline:</strong> {{ task.Deadline | date: 'mediumDate' }}</p>
+
+  <form (ngSubmit)="saveAll()" #taskForm="ngForm" novalidate>
+
+    <!-- Status Dropdown -->
+    <div *ngIf="isEmployee" class="form-group">
+      <label for="status"><strong>Status:</strong></label>
+      <select
+        [(ngModel)]="task.Status"
+        name="status"
+        id="status"
+        class="form-control"
+        (change)="onStatusChange()"
+        required>
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+      </select>
+    </div>
+
+    <!-- Log Time Section -->
+    <div class="log-time-section" *ngIf="showLogForm">
+      <h3>Log Time</h3>
+
+      <!-- Date -->
+<div class="form-group">
+  <label for="logDate">Date:</label>
+  <input type="date" id="logDate" name="logDate"
+         [(ngModel)]="log.date"
+         class="form-control"
+         [required]="task.Status === 'Completed'" #logDate="ngModel" />
+  <div class="error" *ngIf="logDate.invalid && logDate.touched">
+    Date is required.
+  </div>
+</div>
+
+<!-- Hours -->
+<div class="form-group">
+  <label for="hours">Hours Worked:</label>
+  <input type="number" id="hours" name="hoursWorked"
+         [(ngModel)]="log.hoursWorked"
+         class="form-control"
+         min="0" max="23"
+         [required]="task.Status === 'Completed'"
+         (keypress)="preventDecimal($event)" />
+
+
+   <div class="error" *ngIf="logDate.invalid && logDate.touched">
+   Hours is required.
+  </div>
+</div>
+
+<!-- Minutes -->
+<div class="form-group">
+  <label for="minutes">Minutes Worked:</label>
+  <input type="number" id="minutes" name="minutesWorked"
+         [(ngModel)]="log.minutesWorked"
+         class="form-control"
+         min="0" max="59"
+         [required]="task.Status === 'Completed'"
+         (keypress)="preventDecimal($event)" />
+          <div class="error" *ngIf="logDate.invalid && logDate.touched">
+    Minutes is required.
+  </div>
+</div>
+
+<!-- Description -->
+<div class="form-group">
+  <label for="desc">Work Description:</label>
+  <textarea id="desc" name="description"
+            [(ngModel)]="log.description"
+            class="form-control"
+            [required]="task.Status === 'Completed'"></textarea>
+             <div class="error" *ngIf="logDate.invalid && logDate.touched">
+    Description is required.
+  </div>
+</div>
+
+    </div>
+
+    <!-- Buttons -->
+    <div class="task-buttons">
+      <button type="button" class="btn back-btn" (click)="goBack()">Back</button>
+      <button type="submit" class="btn btn-success">Save</button>
+    </div>
+  </form>
+</div>
+
+<!-- If Task Not Found -->
+<div *ngIf="!task">
+  <p>Task not found.</p>
+</div>

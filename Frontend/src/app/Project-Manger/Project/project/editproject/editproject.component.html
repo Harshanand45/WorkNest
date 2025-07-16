@@ -1,0 +1,50 @@
+<div class="form-container">
+  <h2>Add Employee to Project</h2>
+  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+
+    <!-- Select Employee -->
+    <div class="form-group">
+      <label for="EmpId">Select Employee</label>
+      <select formControlName="EmpId" id="EmpId" class="form-control">
+        <option value="" disabled>Select an employee</option>
+        <option *ngFor="let emp of employees" [value]="emp.emp_id" [hidden]="emp.role_id===8">
+          {{ emp.name }} ({{ emp.email }})
+        </option>
+      </select>
+      <div *ngIf="employeeForm.get('EmpId')?.touched && employeeForm.get('EmpId')?.invalid" class="error">
+        <small>Employee selection is required.</small>
+      </div>
+    </div>
+
+    <!-- Select Role -->
+    <div class="form-group">
+      <label for="ProjectRoleId">Select Role</label>
+      <select formControlName="ProjectRoleId" id="ProjectRoleId" class="form-control">
+        <option value="" disabled>Select a role</option>
+        <option *ngFor="let role of roles" [value]="role.ProjectRoleId">
+          {{ role.Role }}
+        </option>
+      </select>
+      <div *ngIf="employeeForm.get('ProjectRoleId')?.touched && employeeForm.get('ProjectRoleId')?.invalid" class="error">
+        <small>Role selection is required.</small>
+      </div>
+    </div>
+
+    <!-- Join Date -->
+    <div class="form-group">
+      <label for="CreatedOn">Join Date</label>
+      <input type="date" id="CreatedOn" class="form-control" formControlName="CreatedOn" />
+      <div *ngIf="employeeForm.get('CreatedOn')?.touched && employeeForm.get('CreatedOn')?.invalid" class="error">
+        <small>Join date is required.</small>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="form-group text-right">
+      <button type="submit" class="btn btn-primary" [disabled]="employeeForm.invalid">
+        Add Employee
+      </button>
+    </div>
+
+  </form>
+</div>

@@ -1,0 +1,114 @@
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.form-container h2 {
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: #222;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+  color: #444;
+  font-size: 0.95rem;
+  user-select: none;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 0.7rem 1rem;
+  border: 1.8px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.25s ease-in-out;
+  font-family: inherit;
+  background-color: #fafafa;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4a90e2;
+  background-color: #fff;
+  box-shadow: 0 0 6px rgba(74, 144, 226, 0.35);
+}
+
+.form-group textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+input.invalid,
+textarea.invalid,
+input.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+  border-color: #e74c3c !important;
+  background-color: #fff2f2;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 0.82rem;
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.form-buttons button {
+  cursor: pointer;
+  padding: 0.65rem 1.4rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: none;
+  font-family: inherit;
+  user-select: none;
+  transition: all 0.3s ease;
+  min-width: 90px;
+}
+
+.form-buttons button[type="submit"] {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.form-buttons button[type="submit"]:hover {
+  background-color: #3b78c5;
+}
+
+.form-buttons button[type="button"] {
+  background-color: #eeeeee;
+  color: #555;
+  border: 1.5px solid #ccc;
+}
+
+.form-buttons button[type="button"]:hover {
+  background-color: #e0e0e0;
+  border-color: #bbb;
+}

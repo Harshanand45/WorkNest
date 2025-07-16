@@ -1,0 +1,115 @@
+.edit-form-card {
+  max-width: 520px; /* smaller width */
+  margin: 1.8rem auto;
+  padding: 1.5rem 2rem; /* reduced padding */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.09);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.edit-form-card h2 {
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  font-size: 1.55rem; /* slightly smaller font */
+  color: #222;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #555;
+  user-select: none;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea,select {
+  padding: 0.6rem 1rem; /* smaller padding */
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 6px rgba(74, 144, 226, 0.4);
+}
+
+.form-group textarea {
+  min-height: 70px; /* a bit shorter */
+}
+
+input.invalid,
+textarea.invalid,
+input.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+  border-color: #e74c3c !important;
+  background-color: #ffe6e6;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 0.8rem; /* smaller error text */
+  margin-top: 0.3rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.9rem;
+  margin-top: 1.75rem;
+}
+
+.btn-save,
+.btn-cancel {
+  cursor: pointer;
+  padding: 0.65rem 1.5rem; /* smaller buttons */
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  transition: background-color 0.3s ease;
+  font-family: inherit;
+  user-select: none;
+  min-width: 85px;
+}
+
+.btn-save {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  background-color: #357ABD;
+}
+
+.btn-save:disabled {
+  background-color: #a0c4f9;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background-color: #f0f0f0;
+  color: #666;
+  border: 1.5px solid #ccc;
+}
+
+.btn-cancel:hover {
+  background-color: #e0e0e0;
+}

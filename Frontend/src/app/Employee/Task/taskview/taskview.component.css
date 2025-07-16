@@ -1,0 +1,179 @@
+.task-detail-card {
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  max-width: 800px;             /* Increased width */
+  margin: 4rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: 'Segoe UI', sans-serif;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+  font-size: 1.2rem;            /* Increased base font size */
+}
+
+.task-detail-card h2 {
+  font-size: 2rem;              /* Larger title */
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.task-detail-card p {
+  margin: 0;
+  font-size: 1.15rem;           /* Slightly larger paragraph text */
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: #374151;
+}
+
+.priority {
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+.priority.low {
+  background-color: #22c55e;
+}
+
+.priority.medium {
+  background-color: #facc15;
+  color: #333;
+}
+
+.priority.high {
+  background-color: #f97316;
+}
+
+.priority.critical {
+  background-color: #ef4444;
+}
+.task-buttons {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.query-btn {
+  background-color: #540ed5;
+  color: white;
+}
+
+.query-btn:hover {
+  background-color: #021a32;
+}
+
+.back-btn {
+  background-color: #6b7280;
+  color: white;
+}
+
+.back-btn:hover {
+  background-color: #4b5563;
+}
+
+.task-detail-card select {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 1.05rem;
+  color: #111827;
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.task-detail-card select:focus {
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.log-time-section {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 30px;
+  max-width: 600px;
+}
+
+.log-time-section h3 {
+  margin-bottom: 16px;
+  color: #2c3e50;
+}
+
+.log-time-section label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #333;
+}
+
+.log-time-section input,
+.log-time-section textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.log-time-section input[type="number"]::-webkit-inner-spin-button,
+.log-time-section input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.log-time-section textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.log-time-section button {
+  background-color: #3498db;
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.log-time-section button[disabled] {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.log-time-section button:hover:not([disabled]) {
+  background-color: #2980b9;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}

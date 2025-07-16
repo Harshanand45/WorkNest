@@ -1,0 +1,64 @@
+<div class="form-container" *ngIf="projectForm">
+  <h2>Edit Project</h2>
+  <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
+    
+    <div class="form-group">
+      <label>Project Title</label>
+      <input type="text" formControlName="Name" class="form-control" />
+    </div>
+
+    <div class="form-group">
+      <label>Start Date</label>
+      <input type="date" formControlName="StartDate" class="form-control" />
+    </div>
+
+    <div class="form-group">
+      <label>End Date</label>
+      <input type="date" formControlName="EndDate" class="form-control" />
+    </div>
+
+    <div class="form-group">
+      <label>Project Manager</label>
+      <select formControlName="ProjectManager" class="form-control">
+        <option *ngFor="let emp of employees" [value]="emp.emp_id">
+          {{ emp.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Priority</label>
+      <select formControlName="Priority" class="form-control">
+        <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+      </select>
+    </div>
+     
+<mat-form-field appearance="outline" class="full-width">
+  <mat-label>Status</mat-label>
+  <mat-select formControlName="Status" multiple>
+    <mat-option *ngFor="let s of statuses" [value]="s">{{ s }}</mat-option>
+  </mat-select>
+  <mat-error *ngIf="projectForm.get('Status')?.touched && projectForm.get('Status')?.invalid">
+    At least one status must be selected.
+  </mat-error>
+</mat-form-field>
+
+<textarea
+  id="description"
+  formControlName="Description"
+  class="form-control description-area"
+  rows="5"
+  placeholder="Enter detailed project description"
+></textarea>
+
+   
+<br>
+    <div class="d-flex gap-2 mt-4 justify-content-end">
+  <button type="submit" class="btn btn-primary">Submit Project</button>
+  
+  <button type="submit" class="btn btn-danger" (click)="back()">
+    <i class="fas fa-arrow-left me-2"></i>Back
+  </button>
+</div>
+  </form>
+</div>

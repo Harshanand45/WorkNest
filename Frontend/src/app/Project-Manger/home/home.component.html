@@ -1,0 +1,88 @@
+<div class="dashboard-wrapper d-flex justify-content-center">
+
+  <!-- Chart and Project Selection -->
+  <div class="chart-container ">
+
+    <!-- Pie Chart for Task Status -->
+    <div class="chart-card">
+      <p-chart
+        type="pie"
+        [data]="pieChartData"
+        style="display: flex; width: 100%; height: 300px;">
+      </p-chart>
+    </div>
+
+    <!-- Project Dropdown -->
+    <div class="select-button-wrapper">
+      <select
+        [(ngModel)]="selectedProject"
+        (change)="updateChart()"
+        class="native-dropdown"
+      >
+        <option [ngValue]="null" disabled>Select Project</option>
+        <option *ngFor="let project of projects" [ngValue]="project">
+          {{ project.Name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Bar Chart for Ongoing Priorities -->
+    <div class="chart-carda">
+      <h4 class="chart-heading">Ongoing Tasks by Priority</h4>
+      <p-chart
+        type="bar"
+        [data]="barChartData"
+        [options]="barChartOptions"
+        style="width: 100%; height: 300px;"
+        class="bar">
+      </p-chart>
+    </div>
+  </div>
+</div>
+<br>
+
+  <!-- Recent Tasks Table -->
+  <div class="card recent-tasks-card">
+    <p-card>
+      <h3>Recent Tasks</h3>
+
+      <p-table [value]="recentTasks" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>#</th>
+            <th>Task</th>
+            <th>Employee</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Due Date</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-task let-i="rowIndex">
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td>{{ task.title }}</td>
+            <td>{{ task.assignedTo }}</td>
+            <td>
+              <span class="priority-tag" [ngClass]="task.priority.toLowerCase()">
+                {{ task.priority }}
+              </span>
+            </td>
+            <td>
+              <span class="status-tag" [ngClass]="task.status.toLowerCase()">
+                {{ task.status }}
+              </span>
+            </td>
+            <td>{{ task.dueDate | date: 'mediumDate' }}</td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="text-center">No recent tasks found in the last 24 hours.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+

@@ -1,0 +1,52 @@
+<div class="project-view-container">
+  <h2>Project Details</h2>
+
+  <div class="project-details" *ngIf="project">
+    <p><strong>Title:</strong> {{ project.Name }}</p>
+    <p><strong>Manager:</strong> {{ project.ProjectManager }}</p>
+
+    <p><strong>Start Date:</strong> {{ project.StartDate | date }}</p>
+    <p><strong>End Date:</strong> {{ project.EndDate | date }}</p>
+    <p><strong>Status:</strong> {{ project.Status }}</p>
+    <p><strong>Priority:</strong> {{ project.Priority }}</p>
+    <p><strong>Description:</strong> {{ project.Description }}</p>
+  </div>
+
+  <!-- Assigned Employees Table -->
+<div *ngIf="assignedEmployees.length > 0" class="assigned-employees-section">
+  <h3>Assigned Employees</h3>
+  <table class="assigned-table">
+    <thead>
+      <tr>
+        <th>Employee ID</th>
+        <th>Role</th>
+        <th>Assigned On</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let emp of assignedEmployees">
+        <td>{{ getEmployeeName(emp.EmpId) }}</td>
+
+         <td>{{ getRoleName(emp.ProjectRoleId) }}</td>
+        <td>{{ emp.CreatedOn | date }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="assignedEmployees.length === 0">
+  <p>No employees have been assigned to this project.</p>
+</div>
+
+
+  <div class="button-row">
+    <button (click)="backToList()">Back to Projects</button>
+    <button 
+  class="add-employee-btn" 
+  [disabled]="!project?.ProjectId"
+  (click)="editProject(project?.ProjectId!)">
+  Add Employee
+</button>
+
+  </div>
+</div>

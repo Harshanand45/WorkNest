@@ -1,0 +1,33 @@
+
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <img [src]="employeeUrl" alt="User Avatar" class="profile-image" />
+      <h2>{{ name }}</h2>
+      <p class="role">{{ role }}</p>
+    </div>
+
+    <div class="profile-details">
+      <div class="profile-detail">
+        <label>Phone:</label>
+        <span>{{ phone }}</span>
+      </div>
+      <div class="profile-detail">
+        <label>Email:</label>
+        <span>{{ email }}</span>
+      </div>
+      <div class="profile-detail">
+        <label>Address:</label>
+        <span>{{ address }}</span>
+      </div>
+      <div class="profile-detail">
+        <label>Description:</label>
+        <p>{{ description }}</p>
+      </div>
+    </div>
+
+    <div class="edit-btn-container">
+      <button class="edit-btn" (click)="onEdit()">Edit Profile</button>
+    </div>
+  </div>
+</div>

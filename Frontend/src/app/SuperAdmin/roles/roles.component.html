@@ -1,0 +1,125 @@
+<!-- ✅ Role Management Card -->
+<div class="card p-3 shadow-sm" style="border-radius: 18px;">
+  <div class="container">
+    <!-- Title & Add Button -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-3">Role Management</h2>
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#roleModal" (click)="openCreateModal()">
+        <i class="fas fa-plus"></i> Add Role
+      </button>
+    </div>
+
+   <div *ngIf="isLoading" class="text-center my-4">
+  <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered text-center">
+        <thead class="table-light">
+          <tr>
+            <th>Role</th>
+            <th>Created On</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let role of roles">
+            <td>{{ role.role || 'N/A' }}</td>
+            <td>{{ role.created_on ? (role.created_on |  date: 'dd-MM-yyyy') : 'N/A' }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" data-bs-toggle="modal" data-bs-target="#roleModal" (click)="editRole(role)">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="deleteRole(role.role_id)">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="roles.length === 0">
+            <td colspan="3" class="text-center text-muted">No roles found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-end align-items-center gap-2 mt-3">
+      <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn btn-outline-secondary">
+             <i class="fas fa-arrow-left"></i>
+      </button>
+      <div>
+        <span *ngIf="totalPages !== 0">Page {{ currentPage }} of {{ totalPages }}</span>
+        <span *ngIf="totalPages === 0">Page 0 of {{ totalPages }}</span>
+      </div>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn btn-outline-secondary">
+             <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Modal (Centered) -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <h5 class="modal-title" id="roleModalLabel">{{ isEditMode ? 'Edit Role' : 'Create Role' }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" #closeModalBtn></button>
+      </div>
+      <form [formGroup]="roleForm" (ngSubmit)="submitRole()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="role" class="form-label">Role Name</label>
+              <input type="text" id="role" class="form-control" formControlName="role" />
+              <div *ngIf="roleForm.controls['role'].invalid && roleForm.controls['role'].touched" class="text-danger">
+                Role is required
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" [disabled]="roleForm.invalid">
+            <i class="fas fa-save"></i> {{ isEditMode ? 'Update Role' : 'Create Role' }}
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ✅ Modal: Centered & Reactive Form -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content shadow">
+      <div class="modal-header">
+        <h5 class="modal-title" id="roleModalLabel">{{ isEditMode ? 'Edit Role' : 'Create Role' }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" #closeModalBtn></button>
+      </div>
+      <form [formGroup]="roleForm" (ngSubmit)="submitRole()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="role" class="form-label">Role Name</label>
+              <input type="text" id="role" class="form-control" formControlName="role" />
+              <div *ngIf="roleForm.controls['role'].invalid && roleForm.controls['role'].touched" class="text-danger">
+                Role is required
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" [disabled]="roleForm.invalid">
+            {{ isEditMode ? 'Update Role' : 'Create Role' }}
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

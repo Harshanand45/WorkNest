@@ -1,0 +1,59 @@
+.task-detail-card {
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  max-width: 800px;             /* Increased width */
+  margin: 4rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: 'Segoe UI', sans-serif;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+  font-size: 1.2rem;            /* Increased base font size */
+}
+
+.task-detail-card h2 {
+  font-size: 2rem;              /* Larger title */
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.task-detail-card p {
+  margin: 0;
+  font-size: 1.15rem;           /* Slightly larger paragraph text */
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: #374151;
+}
+
+.priority {
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+.priority.low {
+  background-color: #22c55e;
+}
+
+.priority.medium {
+  background-color: #facc15;
+  color: #333;
+}
+
+.priority.high {
+  background-color: #f97316;
+}
+
+.priority.critical {
+  background-color: #ef4444;
+}
+

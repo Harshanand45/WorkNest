@@ -1,0 +1,100 @@
+<!-- Report Filter Card -->
+<div class="card p-3 mb-4 shadow-sm" style="border-radius: 18px;">
+  <div class="row g-4 align-items-end">
+
+    <!-- Employee Filter -->
+    <div class="col-md-2">
+      <label class="form-label">Employee</label>
+      <select [(ngModel)]="selectedEmpId" class="form-select">
+        <option [ngValue]="null">All Employees</option>
+        <option *ngFor="let emp of employees" [value]="emp.emp_id" [hidden]="emp.emp_id === 8 || emp.emp_id === 11">
+          {{ emp.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Task Name Search -->
+    <div class="col-md-2">
+      <label class="form-label">Task Name</label>
+      <input type="text" class="form-control" [(ngModel)]="taskSearch" placeholder="Search by Task Name">
+    </div>
+
+    <!-- Start Date -->
+    <div class="col-md-2">
+      <label class="form-label">Start Date</label>
+      <input type="date" class="form-control" [(ngModel)]="startDate" />
+    </div>
+
+    <!-- End Date -->
+    <div class="col-md-2">
+      <label class="form-label">End Date</label>
+      <input type="date" class="form-control" [(ngModel)]="endDate" />
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="col-md-4 text-end">
+      <button (click)="applyFilters()" class="btn btn-primary me-2" style="width: 100px;">Search</button>
+      <button (click)="clearFilters()" class="btn btn-danger" style="width: 100px;">Clear</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Report Table Card -->
+<div class="card p-3 shadow-sm" style="border-radius: 18px;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Time Log Report</h2>
+    <button (click)="exportToExcel()" class="btn btn-success">
+      <i class="fas fa-file-excel"></i> Export to Excel
+    </button>
+  </div>
+
+  <!-- Time Log Table -->
+  <div class="table-responsive">
+    <table class="table table-bordered text-center">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Task</th>
+          <th>Employee</th>
+          <th>Time Spent</th>
+          <th>Description</th>
+          <th>Expected Time(In hrs)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of filteredLogs">
+          <td>{{ log.date | date: 'dd-MM-yyyy' }}</td>
+          <td>{{ getTaskName(log.taskId) }}</td>
+          <td>{{ getEmployeeName(log.empId) }}</td>
+          <td>{{ formatTime(log.hoursSpent, log.minutesSpent) }}</td>
+          <td>{{ log.description }}</td>
+          <td>{{ getExpectedHours(log.taskId) }}</td>
+        </tr>
+        <tr *ngIf="filteredLogs.length === 0">
+          <td colspan="6" class="text-muted">No logs found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <div>
+      <label for="itemsPerPage" class="me-2">Items per page:</label>
+      <select id="itemsPerPage" [(ngModel)]="itemsPerPage" (change)="applyFilters()" class="form-select d-inline-block" style="width: auto;">
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="20">20</option>
+      </select>
+    </div>
+
+    <div class="pagination-controls">
+      <button (click)="prevPage()" [disabled]="currentPage === 1" class="btn btn-outline-primary me-2">     <i class="fas fa-arrow-left"></i></button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn btn-outline-primary ms-2">     <i class="fas fa-arrow-right"></i></button>
+    </div>
+  </div>
+</div>
+
+

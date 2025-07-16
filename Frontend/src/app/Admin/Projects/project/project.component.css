@@ -1,0 +1,98 @@
+/* === Filter Card Styles === */
+.filter-card {
+  margin-top: 2rem;
+  background: #fff;
+  border-radius: 25px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.filter-input {
+  min-width: 180px;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Fix dropdown arrow not appearing */
+select.filter-input {
+  appearance: auto;          /* Default for modern browsers */
+  -webkit-appearance: auto;  /* Safari/Chrome */
+  -moz-appearance: auto;     /* Firefox */
+}
+
+/* === Project List Card === */
+.project-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Header with title and button */
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.project-header h2 {
+  margin: 0;
+}
+
+/* === Table === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+th,
+td {
+  padding: 0.75rem;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+/* === Pagination Controls === */
+.pagination-controls {
+  display: flex;
+  justify-content: flex-start;
+  align-items:flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+h2{
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-input {
+    width: 100%;
+  }
+
+  .project-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .pagination-controls {
+    flex-direction: column;
+  }
+}

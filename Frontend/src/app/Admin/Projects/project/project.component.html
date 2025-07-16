@@ -1,0 +1,87 @@
+<!-- Filter Card -->
+<div class="card p-3 mb-4 shadow-sm " style="border-radius: 18px;">
+  <div class="row g-5 align-items-center">
+    <div class="col-md-3">
+      <select [(ngModel)]="selectedManagerId" class="form-select">
+        <option [ngValue]="null">All Managers</option>
+        <option *ngFor="let emp of employees" [ngValue]="emp.emp_id">{{ emp.name }}</option>
+      </select>
+    </div>
+  
+
+    <div class="col-md-3">
+      <select [(ngModel)]="selectedStatus" class="form-select">
+         <option [ngValue]="null">All Status</option>
+        <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+      </select>
+    </div>
+       <div class="col-md-4">
+      <input type="text" [(ngModel)]="filterName" placeholder="Search by project name" class="form-control" />
+    </div>
+
+    <div class="col-md-2 ">
+      <button (click)="loadPaginatedProjects()" class="btn btn-primary me-3 ">Search</button>
+      <button (click)="clearFilter()" class="btn btn-danger">Clear</button>
+    </div>
+  </div>
+</div>
+<br>
+<!-- Project List Card -->
+<div class="card p-3 shadow-sm "style="border-radius: 18px;">
+  <br>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Project List</h2>
+    <button class="btn btn-success" (click)="addProject()">
+      <i class="fas fa-plus"></i> Add Project
+    </button>
+  </div>
+<br>
+  <div class="table-responsive">
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>Project Name</th>
+          <th>Project Manager</th>
+          <th>Start Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let project of projects">
+          <td>{{ project.Name }}</td>
+          <td>{{ getProjectManagerName(project.ProjectManager) }}</td>
+          <td>{{ project.StartDate |  date: 'dd-MM-yyyy' }}</td>
+          <td>{{ project.Status }}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary me-1" (click)="viewProject(project.ProjectId)">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-primary me-1" (click)="editProject(project.ProjectId)">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="deleteProject(project.ProjectId)">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="projects.length === 0">
+          <td colspan="5" class="text-center text-muted">No projects found for your company.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+<br>
+  <div class="d-flex justify-content-end align-items-center gap-2 mt-3">
+  <button (click)="prevPage()" [disabled]="currentPage === 1" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i>
+  </button>
+  <div >
+  <span *ngIf="totalPages!=0" >Page {{ currentPage }} of {{ totalPages }}</span>
+  <span *ngIf="totalPages==0" >Page 0 of {{ totalPages }}</span>
+  </div>
+  <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-right"></i>
+  </button>
+</div>
+

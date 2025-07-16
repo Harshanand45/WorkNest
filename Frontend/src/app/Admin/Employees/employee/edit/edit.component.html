@@ -1,0 +1,87 @@
+<div class="edit-form-card">
+  <h2>Edit Employee</h2>
+
+  <form #employeeForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="form-group">
+      <label>Name</label>
+      <input
+        type="text"
+        name="name"
+        [(ngModel)]="employee.name"
+        required
+        minlength="3"
+        #nameCtrl="ngModel"
+        [class.invalid]="nameCtrl.invalid && (nameCtrl.dirty || nameCtrl.touched)"
+      />
+      <div *ngIf="getError('name')" class="error">{{ getError('name') }}</div>
+    </div>
+   
+<div class="form-group">
+  <label>Upload Document:</label>
+  <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+
+  <div *ngIf="selectedFileName">
+    <p>Selected: {{ selectedFileName }}</p>
+  </div>
+
+  <!-- Image Preview -->
+  <div *ngIf="employee.ImageUrl">
+    <p>Preview:</p>
+    <img [src]="employee.ImageUrl" alt="Image Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px;" />
+  </div>
+</div>
+
+
+
+   <div class="form-group">
+  <label for="role_id">Role</label>
+  <select
+    id="role_id"
+    name="role_id"
+    required
+    [(ngModel)]="employee.role_id"
+    #roleCtrl="ngModel"
+    [class.invalid]="roleCtrl.invalid && (roleCtrl.dirty || roleCtrl.touched)"
+  >
+    <option value="" disabled>Select Role</option>
+    <option *ngFor="let role of roles" [value]="role.role_id">{{ role.role }}</option>
+  </select>
+  <div class="error" *ngIf="getError('role_id')">
+    <small>{{ getError('role_id') }}</small>
+  </div>
+</div>
+
+
+    <div class="form-group">
+      <label>Phone</label>
+      <input
+        type="tel"
+        name="phone"
+        [(ngModel)]="employee.phone"
+        required
+        pattern="^[0-9]{10}$"
+        #phoneCtrl="ngModel"
+        [class.invalid]="phoneCtrl.invalid && (phoneCtrl.dirty || phoneCtrl.touched)"
+      />
+      <div *ngIf="getError('phone')" class="error">{{ getError('phone') }}</div>
+    </div>
+
+    <div class="form-group">
+      <label>Address</label>
+      <textarea
+        name="address"
+        [(ngModel)]="employee.address"
+        required
+        minlength="5"
+        #addressCtrl="ngModel"
+        [class.invalid]="addressCtrl.invalid && (addressCtrl.dirty || addressCtrl.touched)"
+      ></textarea>
+      <div *ngIf="getError('address')" class="error">{{ getError('address') }}</div>
+    </div>
+
+    <div class="form-buttons">
+      <button type="submit" class="btn-save" [disabled]="employeeForm.invalid">Update</button>
+      <button type="button" class="btn-cancel" (click)="cancel()">Cancel</button>
+    </div>
+  </form>
+</div>

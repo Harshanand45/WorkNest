@@ -1,0 +1,115 @@
+<div class="employee-page">
+  <!-- Filter Card -->
+ <!-- Employee Filter Card -->
+<div class="card p-3 mb-4 shadow-sm">
+  <div class="row g-4 align-items-center">
+    
+    <!-- Role Dropdown -->
+    <div class="col-md-3" style="width: 300px;">
+      <select [(ngModel)]="selectedRoleId" (change)="currentPage = 1;" class="form-select">
+        <option value="">All Roles</option>
+        <option *ngFor="let role of roles" [value]="role.role_id" [hidden]="role.role_id === 12|| role.role_id==8">
+          {{ role.role }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Search by Name -->
+    <div class="col-md-5" style="width: 500px;">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Search by name"
+        [(ngModel)]="searchKeyword"
+        (input)="currentPage = 1;"
+      />
+    </div>
+
+    <!-- Buttons -->
+    <div class="col-md-4 d-flex justify-content-end gap-4">
+      <button class="btn btn-primary  me-2" style="width: 160px; height: 38px;" (click)="loadEmployees()">Search</button>
+      <button class="btn btn-danger " style="width: 130px; height: 38px;" (click)="clearFilters()">Clear</button>
+    </div>
+  </div>
+</div>
+
+  
+<br>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <div class="employee-header">
+      <h2>Employee List</h2>
+      <button class=" btn btn-success" (click)="addEmployee()">
+        <i class="fas fa-user-plus"></i> Add Employee
+      </button>
+    </div>
+ <br>
+ 
+    <table class="employee-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Mobile No.</th>
+          <th>Address</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emp of employees; let i = index">
+          <td>{{ emp.name }}</td>
+          <td>{{ getRoleName(emp.role_id) }}</td>
+          <td>{{ emp.phone }}</td>
+          <td>
+  {{ emp.address.length > 30 ? (emp.address | slice:0:30) + '...' : emp.address }}
+  <span *ngIf="emp.address.length > 30" 
+        (click)="openAddressModal(emp.address)" 
+        style="cursor: pointer; text-decoration: underline; color: #0d6efd;">
+    more
+  </span>
+</td>
+
+
+          <td>
+          
+  
+  <button class="btn btn-sm btn-primary me-1" (click)="editEmployee(emp.emp_id)" title="Edit">
+    <i class="fas fa-edit"></i>
+  </button>
+  <button class="btn btn-sm btn-danger me-1" (click)="deleteEmployee(emp.emp_id)" title="Delete">
+    <i class="fas fa-trash-alt"></i>
+  </button>
+
+
+          </td>
+        </tr>
+      </tbody>
+    </table>
+ <br>
+    <div class="pagination-controls">
+      <button (click)="previousPage()" [disabled]="currentPage === 1">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages || totalPages === 0">
+          <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+          <!-- Address Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-3">
+      <div class="modal-header ">
+        <h5 class="modal-title" id="addressModalLabel">Full Address</h5>
+        <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {{ selectedAddress }}
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,45 @@
+<div class="project-view-container">
+  <h2>Project Details</h2>
+  <div class="project-details" *ngIf="project">
+    <p><strong>Title:</strong> {{ project.Name }}</p>
+    <p><strong>Manager:</strong> {{ getProjectManagerName(project.ProjectManager) }}</p>
+    <p><strong>Start Date:</strong> {{ project.StartDate | date: 'yyyy-MM-dd' }}</p>
+    <p><strong>End Date:</strong> {{ project.EndDate | date: 'yyyy-MM-dd' }}</p>
+    <p><strong>Status:</strong> {{ project.Status }}</p>
+    <p><strong>Priority:</strong> {{ project.Priority }}</p>
+    <p><strong>Description:</strong> {{ project.Description }}</p>
+  </div>
+
+  <div class="assigned-employees-section" *ngIf="assignedEmployees.length > 0">
+    <h3>Assigned Employees</h3>
+    <table class="assigned-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Join Date</th>
+          <th>Role</th>
+          <th>End Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emp of assignedEmployees">
+          <td>{{ emp.name }}</td>
+          <td>{{ emp.joinDate }}</td>
+          <td>{{ emp.role }}</td>
+          <td>{{emp.endDate}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="assignedEmployees.length === 0">
+    <p>No employees have been assigned to this project.</p>
+  </div>
+
+  <!-- Ensure Font Awesome is included in your project -->
+<button class="btn btn-outline-primary d-flex align-items-end" (click)="backToList()">
+  <i class="fas fa-arrow-left me-2" style="color: #ffffff;"></i>
+  
+</button>
+
+</div>

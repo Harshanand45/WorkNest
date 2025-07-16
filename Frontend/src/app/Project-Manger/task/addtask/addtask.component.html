@@ -1,0 +1,150 @@
+
+
+<div class="add-task-container">
+  <h3>Add New Task</h3>
+  <form (ngSubmit)="onSubmit(taskForm)" #taskForm="ngForm" novalidate>
+    
+    <!-- Task Title -->
+    <label for="taskTitle">Task Title</label>
+    <input
+      type="text"
+      id="taskTitle"
+      name="Name"
+      required
+      minlength="3"
+      [(ngModel)]="task.Name"
+      #Name="ngModel"
+      placeholder="Enter task title"
+    />
+    <div class="error" *ngIf="Name.invalid && Name.touched">
+      <span *ngIf="Name.errors?.['required']">Title is required.</span>
+      <span *ngIf="Name.errors?.['minlength']">Minimum 3 characters.</span>
+    </div>
+
+    <!-- Project -->
+    <label for="project">Project</label>
+    <select
+  id="project"
+  name="ProjectId"
+  required
+  [(ngModel)]="task.ProjectId"
+  #ProjectId="ngModel"
+    #selectProject
+  (change)="onProjectChange(+selectProject.value)"
+>
+  <option value="" disabled>Select project</option>
+  <option *ngFor="let proj of projects" [value]="proj.ProjectId">
+    {{ proj.Name }}
+  </option>
+</select>
+
+    <div class="error" *ngIf="ProjectId.invalid && ProjectId.touched">
+      Project is required.
+    </div>
+
+    <!-- Assigned To -->
+    <label for="assignedTo">Assigned To</label>
+    <select
+      id="assignedTo"
+      name="AssignedTo"
+      required
+      [(ngModel)]="task.AssignedTo"
+      #AssignedTo="ngModel"
+    >
+      <option value="" disabled>Select assignee</option>
+      <option *ngFor="let emp of assignedEmployees" [value]="emp.emp_id">
+        {{ emp.name }}
+      </option>
+    </select>
+    <div class="error" *ngIf="AssignedTo.invalid && AssignedTo.touched">
+      Assignee is required.
+    </div>
+
+    <!-- Description -->
+    <label for="description">Description</label>
+    <div>
+      <quill-editor
+        id="description"
+        name="Description"
+        [(ngModel)]="task.Description"
+        [style]="{ width: '525px', height: '200px' }"
+        [modules]="quillModules"
+        #Description="ngModel"
+      ></quill-editor>
+    </div>
+    <div class="error" *ngIf="Description.invalid && Description.touched">
+      Description is required.
+    </div>
+
+    <!-- Upload Documents -->
+    <label for="documents">Upload Documents</label>
+    <input
+      type="file"
+      id="documents"
+      (change)="onFilesSelected($event)"
+      multiple
+    />
+    <div *ngIf="task.DocumentName">
+      <p>Selected Files:</p>
+      <ul>
+        <li *ngFor="let name of task.DocumentName.split(', ')">{{ name }}</li>
+      </ul>
+    </div>
+
+    <!-- Deadline -->
+    <label for="deadline">Deadline</label>
+    <input
+      type="date"
+      id="deadline"
+      name="Deadline"
+      required
+      [(ngModel)]="task.Deadline"
+      #Deadline="ngModel"
+    />
+    <div class="error" *ngIf="Deadline.invalid && Deadline.touched">
+      Deadline is required.
+    </div>
+
+    <!-- Status -->
+    <label for="status">Status</label>
+    <select
+      id="status"
+      name="Status"
+      required
+      [(ngModel)]="task.Status"
+      #Status="ngModel"
+    >
+      <option value="" disabled>Select status</option>
+      <option>Pending</option>
+      <option>Ongoing</option>
+      <option>Completed</option>
+      <option>Blocked</option>
+    </select>
+    <div class="error" *ngIf="Status.invalid && Status.touched">
+      Status is required.
+    </div>
+
+    <!-- Priority -->
+    <label for="taskPriority">Priority</label>
+    <select
+      id="taskPriority"
+      name="Priority"
+      required
+      [(ngModel)]="task.Priority"
+      #Priority="ngModel"
+    >
+      <option value="" disabled>Select priority</option>
+      <option>Low</option>
+      <option>Medium</option>
+      <option>High</option>
+      <option>Critical</option>
+    </select>
+    <div class="error" *ngIf="Priority.invalid && Priority.touched">
+      Priority is required.
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit">Add Task</button>
+  </form>
+</div>
+

@@ -1,0 +1,92 @@
+<div class="row g-3">
+  <!-- Summary Cards -->
+  <div class="col-md-3">
+    <div class="card p-3 shadow-sm rounded-4">
+      <h6 class="m-0 opacity-75 pb-2">Total Projects:</h6>
+      <h3 class="fw-bold mb-0">8</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3 shadow-sm rounded-4">
+      <h6 class="m-0 opacity-75 pb-2">Total Task:</h6>
+      <h3 class="fw-bold mb-0">14</h3>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-3 shadow-sm rounded-4">
+      <h6 class="m-0 opacity-75 pb-2">Resolved Tasks:</h6>
+      <h3 class="fw-bold mb-0">6</h3>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card p-3 shadow-sm rounded-4">
+      <h6 class="m-0 opacity-75 pb-2">Resolved Project:</h6>
+      <h3 class="fw-bold mb-0">4</h3>
+    </div>
+  </div>
+
+  <!-- Chart: Task Status -->
+  <div class="col-md-6">
+    <div class="card shadow-sm rounded-2 p-3">
+      <p-chart
+        type="pie"
+        [data]="pieChartData"
+        [options]="pieChartOptions"
+        styleClass="w-100 "
+      ></p-chart>
+    </div>
+  </div>
+
+  <!-- Chart: Project Priorities -->
+  <div class="col-md-6">
+    <div class="card shadow-sm rounded-2 p-3 h-100 justify-content-end">
+      <p-chart
+        type="bar"
+        [data]="barData"
+        [options]="barOptions"
+        styleClass="w-100 "
+      ></p-chart>
+    </div>
+  </div>
+
+  <!-- Recent Tasks Table -->
+  <div class="col-12">
+    <div class="card p-3 shadow-sm rounded-2">
+      <h5 class="mb-3">Recent Tasks</h5>
+      <p-table [value]="recentTasks" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>#</th>
+            <th>Task</th>
+            <th>Employee</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Due Date</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-task let-i="rowIndex">
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td>{{ task.Name }}</td>
+            <td>{{ task.assignedToName || "Unassigned" }}</td>
+            <td>
+              <span
+                class="badge rounded-pill"
+                [ngClass]="{
+                  'bg-danger': task.Priority === 'High',
+                  'bg-warning text-dark': task.Priority === 'Medium',
+                  'bg-secondary': task.Priority === 'Low'
+                }"
+              >
+                {{ task.Priority || "N/A" }}
+              </span>
+            </td>
+            <td>{{ task.Status || "N/A" }}</td>
+            <td>{{ task.Deadline | date : "mediumDate" }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
