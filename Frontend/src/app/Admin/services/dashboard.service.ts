@@ -47,7 +47,7 @@ export interface TaskOut {
 })
 export class DashboardService {
 
- private baseUrl = 'http://localhost:8000'; // adjust your API base URL here
+ private baseUrl = 'https://worknest-backend-3goy.onrender.com'; // adjust your API base URL here
 
   constructor(private http: HttpClient) {}
 

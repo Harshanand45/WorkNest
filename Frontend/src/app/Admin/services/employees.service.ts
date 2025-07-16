@@ -54,7 +54,7 @@ export class EmployeesService {
   addEmployee(employee: { name: string; role: string; phone: string; address: string; }) {
     throw new Error('Method not implemented.');
   }
-  private baseUrl = 'http://localhost:8000'; // change this if hosted elsewhere
+  private baseUrl = 'https://worknest-backend-3goy.onrender.com'; // change this if hosted elsewhere
 
   constructor(private http: HttpClient) {}
 

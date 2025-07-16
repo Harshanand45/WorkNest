@@ -21,7 +21,7 @@ export interface ProjectEmployee {
   providedIn: 'root'
 })
 export class ProjectEmployeeService {
-  private baseUrl = 'http://localhost:8000/project-employees';
+  private baseUrl = 'https://worknest-backend-3goy.onrender.com/project-employees';
 
   constructor(private http: HttpClient) {}
 
