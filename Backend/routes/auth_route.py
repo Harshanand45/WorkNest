@@ -12,7 +12,7 @@ def login_user(credentials: dict):
     with get_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(
-                "SELECT UserId, RoleId, IsActive FROM TaskManager.dbo.Users WHERE Email = ? AND Password = ?",
+                "SELECT UserId, RoleId, IsActive FROM TaskManager.dbo.Users WHERE Email = %s AND Password = %s",
                 (email, password)
             )
             user = cursor.fetchone()
