@@ -1,11 +1,15 @@
 
-
-import pymssql
+import pyodbc
 
 def get_connection():
-    return pymssql.connect(
-        server='taskserver123.database.windows.net',
-        user='adminuser',
-        password='StrongPassword@123',
-        database='TaskManager'
+    conn_str = (
+        "DRIVER={ODBC Driver 18 for SQL Server};"
+        "SERVER=taskserver123.database.windows.net;"
+        "DATABASE=TaskManager;"
+        "UID=adminuser;"
+        "PWD=StrongPassword@123;"
+        "Encrypt=yes;"
+        "TrustServerCertificate=no;"
+        "Connection Timeout=30;"
     )
+    return pyodbc.connect(conn_str)

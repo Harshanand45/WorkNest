@@ -149,7 +149,7 @@ def delete_employee(emp_id: int, deleted_by: str, db=Depends(get_connection)):
 
     except pymssql.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
-
+import traceback
 
 @router.get("/allemployees", response_model=List[EmployeeOut])
 def list_employees(db=Depends(get_connection)):
@@ -161,11 +161,27 @@ def list_employees(db=Depends(get_connection)):
             FROM Employee WHERE IsActive = 1
         """)
         rows = cursor.fetchall()
-        return [EmployeeOut(**row) for row in rows]
+
+        print("Rows fetched:", rows)  # Debug output
+
+        employees = []
+        for row in rows:
+            try:
+                employees.append(EmployeeOut(**row))
+            except Exception as parse_err:
+                print("Failed to parse row:", row)
+                print("Error:", parse_err)
+                raise HTTPException(status_code=500, detail="Failed to parse employee record")
+
+        return employees
 
     except pymssql.Error as e:
+        print("[Database Error]:", e)
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
-
+    except Exception as ex:
+        print("[Unexpected Error]:", ex)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.post("/employees/paginated", response_model=Dict[str, Any])
 def get_paginated_employees(pagination: EmployeePaginationRequest, db=Depends(get_connection)):
