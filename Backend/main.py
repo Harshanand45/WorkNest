@@ -49,7 +49,7 @@ async def upload_file(file: UploadFile = File(...)):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://gorgeous-tartufo-872a99.netlify.app"],  # Angular dev server
+    allow_origins=[ "http://localhost:4200", "https://gorgeous-tartufo-872a99.netlify.app"],  # Angular dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
