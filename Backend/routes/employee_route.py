@@ -1,240 +1,180 @@
-from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Any, Dict, List
-import base64
-import os
-import uuid
-import pymssql
-
+from typing import Any, Dict
+from fastapi import APIRouter, HTTPException
+from tables.company import Company, CompanyCreate, CompanyUpdate, CompanyPaginationRequest
 from db_connection import get_connection
-from tables.employee import EmployeeCreate, EmployeePaginationRequest, EmployeeUpdate, EmployeeOut
+from datetime import datetime
 
 router = APIRouter()
 
-UPLOAD_DIR = "uploaded_images"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-def save_base64_image(base64_string: str) -> str:
+# ✅ Create a new company
+@router.post("/companies", response_model=Company)
+def create_company(comp: CompanyCreate):
     try:
-        header, encoded = base64_string.split(",", 1)
-        file_ext = header.split("/")[1].split(";")[0]
-        filename = f"{uuid.uuid4()}.{file_ext}"
-        filepath = os.path.join(UPLOAD_DIR, filename)
-        with open(filepath, "wb") as f:
-            f.write(base64.b64decode(encoded))
-        return filepath
+        with get_connection() as conn:
+            with conn.cursor(as_dict=True) as cursor:
+                cursor.execute("SELECT COUNT(*) AS count FROM Company WHERE Name = %s OR Email = %s", (comp.name, comp.email))
+                existing_company = cursor.fetchone()['count']
+                if existing_company > 0:
+                    raise HTTPException(status_code=400, detail="Company name or email already exists.")
+
+                cursor.execute(
+                    """
+                    INSERT INTO Company (Name, IsActive, CompanyDescription, CreatedBy, CompanyLogoName, CompanyLogoUrl, CompanyLogoPath, ContactNo, Email, Address, CreatedOn)
+                    OUTPUT INSERTED.CompanyId, INSERTED.CreatedOn, INSERTED.CreatedBy
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, GETDATE())
+                    """,
+                    (comp.name, int(comp.is_active), comp.company_description, comp.created_by, comp.company_logo_name, 
+                     comp.company_logo_url, comp.company_logo_path, comp.contact_no, comp.email, comp.address)
+                )
+                inserted_row = cursor.fetchone()
+                conn.commit()
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid base64 image data: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-@router.post("/employees", response_model=dict)
-def create_employee(employee: EmployeeCreate, db=Depends(get_connection)):
+    return {
+        "company_id": inserted_row['CompanyId'],
+        "created_on": inserted_row['CreatedOn'].strftime("%Y-%m-%d %H:%M:%S") if inserted_row['CreatedOn'] else None,
+        "created_by": inserted_row['CreatedBy'],
+        "name": comp.name,
+        "company_logo_name": comp.company_logo_name,
+        "company_logo_url": comp.company_logo_url,
+        "company_logo_path": comp.company_logo_path,
+        "company_description": comp.company_description,
+        "contact_no": comp.contact_no,
+        "email": comp.email,
+        "address": comp.address,
+        "is_active": comp.is_active
+    }
+
+# ✅ Get all companies
+@router.get("/allcompanies", response_model=list[Company])
+def get_companies():
+    with get_connection() as conn:
+        with conn.cursor(as_dict=True) as cursor:
+            cursor.execute("SELECT * FROM Company")
+            rows = cursor.fetchall()
+
+    return [
+        Company(
+            company_id=row['CompanyId'],
+            name=row['Name'],
+            is_active=bool(row['IsActive']),
+            company_description=row.get('CompanyDescription'),
+            company_logo_name=row.get('CompanyLogoName'),
+            company_logo_url=row.get('CompanyLogoUrl'),
+            company_logo_path=row.get('CompanyLogoPath'),
+            contact_no=row.get('ContactNo'),
+            email=row.get('Email'),
+            address=row.get('Address'),
+            created_on=row['CreatedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('CreatedOn') else None,
+            created_by=row.get('CreatedBy', 0),
+            updated_on=row['UpdatedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('UpdatedOn') else None,
+            updated_by=row.get('UpdatedBy'),
+            deleted_on=row['DeletedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('DeletedOn') else None,
+            deleted_by=row.get('DeletedBy')
+        )
+        for row in rows
+    ]
+
+# ✅ Update company details
+@router.put("/companies/{company_id}")
+def update_company(company_id: int, comp: CompanyUpdate):
     try:
-        cursor = db.cursor(as_dict=True)
+        with get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT CompanyId, IsActive FROM Company WHERE CompanyId = %s", (company_id,))
+                existing_row = cursor.fetchone()
 
-        cursor.execute("SELECT 1 FROM Employee WHERE Email = %s OR Phone = %s", (employee.email, employee.phone))
-        if cursor.fetchone():
-            raise HTTPException(status_code=400, detail="Email or phone already exists")
+                if not existing_row or existing_row[1] == 0:
+                    raise HTTPException(status_code=404, detail=f"Company with ID {company_id} not found.")
 
-        cursor.execute("SELECT 1 FROM Company WHERE CompanyId = %s", (employee.company_id,))
-        if not cursor.fetchone():
-            raise HTTPException(status_code=404, detail="Company ID not found")
+                update_fields = [f"{field} = %s" for field in comp.dict(exclude_unset=True)]
+                params = list(comp.dict(exclude_unset=True).values())
+                update_fields.append("UpdatedBy = %s")
+                params.append(comp.updated_by)
+                update_fields.append("UpdatedOn = GETDATE()")
+                update_query = f"UPDATE Company SET {', '.join(update_fields)} WHERE CompanyId = %s"
+                params.append(company_id)
 
-        cursor.execute("SELECT 1 FROM Employee WHERE EmpId = %s", (employee.created_by,))
-        if not cursor.fetchone():
-            raise HTTPException(status_code=404, detail="Created by user not found")
+                cursor.execute(update_query, tuple(params))
+                conn.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-        image_path = None
-        if employee.ImageUrl:
-            image_path = save_base64_image(employee.ImageUrl)
+    return {"message": f"Company {company_id} updated successfully!"}
 
-        cursor.execute("""
-            INSERT INTO Employee (Name, RoleID, Phone, Address, Email, Description,
-                                  CreatedOn, CreatedBy, IsActive, CompanyId,
-                                  ImgUrl, EmployeeImg, ImgPath)
-            VALUES (%s, %s, %s, %s, %s, %s, GETDATE(), %s, 1, %s, %s, %s, %s)
-        """, (
-            employee.name, employee.role_id, employee.phone, employee.address,
-            employee.email, employee.description, employee.created_by,
-            employee.company_id, employee.ImageUrl, None, image_path
-        ))
-
-        db.commit()
-        return {"message": "Employee created successfully"}
-
-    except pymssql.Error as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
-
-
-@router.put("/employees/{emp_id}", response_model=dict)
-def update_employee(emp_id: int, employee: EmployeeUpdate, db=Depends(get_connection)):
+# ✅ Soft delete a company
+@router.delete("/companies/{company_id}")
+def delete_company(company_id: int, deleted_by: int):
     try:
-        cursor = db.cursor(as_dict=True)
+        with get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT CompanyId FROM Company WHERE CompanyId = %s", (company_id,))
+                company_exists = cursor.fetchone()
 
-        cursor.execute("SELECT 1 FROM Employee WHERE EmpId = %s AND IsActive = 1", (emp_id,))
-        if not cursor.fetchone():
-            raise HTTPException(status_code=404, detail="Employee not found")
+                if not company_exists:
+                    raise HTTPException(status_code=404, detail=f"Company with ID {company_id} not found.")
 
-        cursor.execute("SELECT 1 FROM Employee WHERE EmpId = %s", (employee.updated_by,))
-        if not cursor.fetchone():
-            raise HTTPException(status_code=404, detail="Updated by user not found")
+                cursor.execute(
+                    "UPDATE Company SET IsActive = 0, DeletedOn = GETDATE(), DeletedBy = %s WHERE CompanyId = %s",
+                    (deleted_by, company_id)
+                )
+                conn.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-        FIELD_MAP = {
-            "name": "Name",
-            "role_id": "RoleID",
-            "phone": "Phone",
-            "address": "Address",
-            "email": "Email",
-            "description": "Description",
-            "ImageUrl": "ImgUrl"
-        }
+    return {"message": f"Company {company_id} marked as deleted by user {deleted_by}."}
 
-        update_fields = []
-        params = []
-
-        for field, value in employee.dict(exclude_unset=True).items():
-            if field == "updated_by" or field == "EmployeeImage":
-                continue
-            db_field = FIELD_MAP.get(field)
-            if db_field:
-                update_fields.append(f"{db_field} = %s")
-                params.append(value)
-
-        if employee.EmployeeImage and "," in employee.EmployeeImage:
-            image_path = save_base64_image(employee.EmployeeImage)
-            update_fields.append("ImgPath = %s")
-            params.append(image_path)
-        elif employee.EmployeeImage:
-            if employee.EmployeeImage.startswith("data:image/"):
-                image_path = save_base64_image(employee.EmployeeImage)
-                update_fields.append("ImgPath = %s")
-                params.append(image_path)
-
-        if not update_fields:
-            raise HTTPException(status_code=400, detail="No fields provided to update")
-
-        update_fields.append("UpdatedOn = GETDATE()")
-        update_fields.append("UpdatedBy = %s")
-        params.append(employee.updated_by)
-        params.append(emp_id)
-
-        query = f"UPDATE Employee SET {', '.join(update_fields)} WHERE EmpId = %s"
-        cursor.execute(query, params)
-        db.commit()
-
-        return {"message": "Employee updated successfully"}
-
-    except pymssql.Error as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
-
-
-@router.delete("/employees/{emp_id}", response_model=dict)
-def delete_employee(emp_id: int, deleted_by: str, db=Depends(get_connection)):
-    try:
-        cursor = db.cursor(as_dict=True)
-
-        cursor.execute("SELECT 1 FROM Employee WHERE EmpId = %s AND IsActive = 1", (emp_id,))
-        if not cursor.fetchone():
-            raise HTTPException(status_code=404, detail="Employee not found")
-
-        cursor.execute("SELECT 1 FROM Employee WHERE EmpId = %s", (deleted_by,))
-        if not cursor.fetchone():
-            raise HTTPException(status_code=404, detail="Deleted by user not found")
-
-        cursor.execute("""
-            UPDATE Employee SET IsActive = 0, DeletedOn = GETDATE(), DeletedBy = %s WHERE EmpId = %s
-        """, (deleted_by, emp_id))
-        db.commit()
-
-        return {"message": "Employee deleted successfully"}
-
-    except pymssql.Error as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
-import traceback
-
-@router.get("/allemployees", response_model=List[EmployeeOut])
-def list_employees(db=Depends(get_connection)):
-    try:
-        cursor = db.cursor(as_dict=True)
-        cursor.execute("""
-            SELECT EmpId, Name, RoleID, Phone, Address, Email, Description,
-                   CompanyId, CreatedBy, UpdatedBy, IsActive, ImgUrl, EmployeeImg, ImgPath
-            FROM Employee WHERE IsActive = 1
-        """)
-        rows = cursor.fetchall()
-
-        print("Rows fetched:", rows)  # Debug output
-
-        employees = []
-        for row in rows:
-            try:
-                employees.append(EmployeeOut(**row))
-            except Exception as parse_err:
-                print("Failed to parse row:", row)
-                print("Error:", parse_err)
-                raise HTTPException(status_code=500, detail="Failed to parse employee record")
-
-        return employees
-
-    except pymssql.Error as e:
-        print("[Database Error]:", e)
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
-    except Exception as ex:
-        print("[Unexpected Error]:", ex)
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-@router.post("/employees/paginated", response_model=Dict[str, Any])
-def get_paginated_employees(pagination: EmployeePaginationRequest, db=Depends(get_connection)):
+# ✅ Get paginated companies
+@router.post("/companies/paginated", response_model=Dict[str, Any])
+def get_paginated_companies(pagination: CompanyPaginationRequest):
     try:
         page = pagination.page
-        page_limit = pagination.page_limit
-        offset = (page - 1) * page_limit
+        limit = pagination.limit
+        offset = (page - 1) * limit
 
-        filters = ["IsActive = 1", "RoleId != 8"]
-        params = []
+        with get_connection() as conn:
+            with conn.cursor(as_dict=True) as cursor:
+                cursor.execute("SELECT COUNT(*) AS count FROM Company WHERE IsActive = 1")
+                total_count = cursor.fetchone()['count']
 
-        if pagination.role_id:
-            filters.append("RoleId = %s")
-            params.append(pagination.role_id)
-        if pagination.search:
-            filters.append("LOWER(Name) LIKE %s")
-            params.append(f"%{pagination.search.lower()}%")
-        if pagination.company_id:
-            filters.append("CompanyId = %s")
-            params.append(pagination.company_id)
+                cursor.execute("""
+                    SELECT * FROM Company
+                    WHERE IsActive = 1
+                    ORDER BY CompanyId
+                    OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+                """, (offset, limit))
+                rows = cursor.fetchall()
 
-        where_clause = " AND ".join(filters)
-
-        cursor = db.cursor(as_dict=True)
-
-        # Total count
-        count_query = f"SELECT COUNT(*) AS total FROM Employee WHERE {where_clause}"
-        cursor.execute(count_query, params)
-        total_count = cursor.fetchone()["total"]
-
-        # Paginated data
-        data_query = f"""
-            SELECT EmpId, Name, RoleID, Phone, Address, Email, Description,
-                   CompanyId, CreatedBy, UpdatedBy, IsActive,
-                   CreatedOn, UpdatedOn, DeletedOn, DeletedBy
-            FROM Employee
-            WHERE {where_clause}
-            ORDER BY EmpId
-            OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
-        """
-        cursor.execute(data_query, params + [offset, page_limit])
-        rows = cursor.fetchall()
-
-        data = [EmployeeOut(**row) for row in rows]
-        total_pages = (total_count + page_limit - 1) // page_limit
+        data = [
+            Company(
+                company_id=row['CompanyId'],
+                name=row['Name'],
+                is_active=bool(row['IsActive']),
+                company_description=row.get('CompanyDescription'),
+                company_logo_name=row.get('CompanyLogoName'),
+                company_logo_url=row.get('CompanyLogoUrl'),
+                company_logo_path=row.get('CompanyLogoPath'),
+                contact_no=row.get('ContactNo'),
+                email=row.get('Email'),
+                address=row.get('Address'),
+                created_on=row['CreatedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('CreatedOn') else None,
+                created_by=row.get('CreatedBy', 0),
+                updated_on=row['UpdatedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('UpdatedOn') else None,
+                updated_by=row.get('UpdatedBy'),
+                deleted_on=row['DeletedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('DeletedOn') else None,
+                deleted_by=row.get('DeletedBy')
+            ).dict()
+            for row in rows
+        ]
 
         return {
-            "data": [d.dict() for d in data],
+            "data": data,
             "total": total_count,
             "page": page,
-            "page_limit": page_limit,
-            "total_pages": total_pages
+            "limit": limit,
+            "total_pages": (total_count + limit - 1) // limit
         }
 
-    except pymssql.Error as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
