@@ -1,34 +1,31 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Any, Dict, List, Optional
-import pyodbc # Using pyodbc as per your current code
+import pymssql # Changed from pyodbc
 from datetime import datetime
 from tables.task import TaskCreate, TaskPaginationRequest, TaskUpdate, TaskOut
 from db_connection import get_connection
 
 router = APIRouter()
 
-# Helper validation functions
-def validate_user(cursor: pyodbc.Cursor, user_id: int, role: str):
-    # Parameters to cursor.execute must be a tuple/list
-    cursor.execute("SELECT 1 FROM [dbo].[Employee] WHERE EmpId = ?", (user_id,))
+# Helper validation functions - changed to pymssql parameter style and cursor type
+def validate_user(cursor: pymssql.Cursor, user_id: int, role: str):
+    # Use %s placeholder and pass parameters as a tuple
+    cursor.execute("SELECT 1 FROM [dbo].[Employee] WHERE EmpId = %s", (user_id,))
     if not cursor.fetchone():
         raise HTTPException(status_code=404, detail=f"{role} user not found")
 
-def validate_employee(cursor: pyodbc.Cursor, emp_id: int):
-    # Parameters to cursor.execute must be a tuple/list
-    cursor.execute("SELECT 1 FROM [dbo].[Employee] WHERE EmpId = ?", (emp_id,))
+def validate_employee(cursor: pymssql.Cursor, emp_id: int):
+    cursor.execute("SELECT 1 FROM [dbo].[Employee] WHERE EmpId = %s", (emp_id,))
     if not cursor.fetchone():
         raise HTTPException(status_code=404, detail="Assigned employee not found")
 
-def validate_project(cursor: pyodbc.Cursor, project_id: int):
-    # Parameters to cursor.execute must be a tuple/list
-    cursor.execute("SELECT 1 FROM [dbo].[Projects] WHERE ProjectId = ?", (project_id,))
+def validate_project(cursor: pymssql.Cursor, project_id: int):
+    cursor.execute("SELECT 1 FROM [dbo].[Projects] WHERE ProjectId = %s", (project_id,))
     if not cursor.fetchone():
         raise HTTPException(status_code=404, detail="Project not found")
 
-def validate_company(cursor: pyodbc.Cursor, company_id: int):
-    # Parameters to cursor.execute must be a tuple/list
-    cursor.execute("SELECT 1 FROM [dbo].[company] WHERE CompanyId = ?", (company_id,))
+def validate_company(cursor: pymssql.Cursor, company_id: int):
+    cursor.execute("SELECT 1 FROM [dbo].[company] WHERE CompanyId = %s", (company_id,))
     if not cursor.fetchone():
         raise HTTPException(status_code=404, detail="Company not found")
 
@@ -36,9 +33,10 @@ def validate_company(cursor: pyodbc.Cursor, company_id: int):
 
 ### Create Task
 @router.post("/tasks", response_model=TaskOut)
-def create_task(task: TaskCreate, db: pyodbc.Connection = Depends(get_connection)):
+def create_task(task: TaskCreate, db: pymssql.Connection = Depends(get_connection)):
     try:
-        cursor = db.cursor()
+        # Create cursor with as_dict=True for dictionary-like row access
+        cursor = db.cursor(as_dict=True)
 
         validate_user(cursor, task.CreatedBy, "CreatedBy")
         validate_company(cursor, task.CompanyId)
@@ -51,8 +49,8 @@ def create_task(task: TaskCreate, db: pyodbc.Connection = Depends(get_connection
             INSERT INTO Task
             (Name, ProjectId, AssignedTo, DocumentPath, DocumentUrl, Deadline, Priority, Status,
              CreatedOn, CreatedBy, IsActive, CompanyId, Description, DocumentName, ExptedHours)
-            OUTPUT INSERTED.*
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), ?, 1, ?, ?, ?, ?)
+            OUTPUT INSERTED.* -- SQL Server specific, works with pymssql
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, GETDATE(), %s, 1, %s, %s, %s, %s)
         """
         cursor.execute(insert_query, (
             task.Name, task.ProjectId, task.AssignedTo, task.DocumentPath, task.DocumentUrl,
@@ -66,29 +64,29 @@ def create_task(task: TaskCreate, db: pyodbc.Connection = Depends(get_connection
             raise HTTPException(status_code=500, detail="Failed to retrieve inserted task data after creation.")
 
         return TaskOut(
-            TaskId=row.TaskId,
-            Name=row.Name,
-            ProjectId=row.ProjectId,
-            AssignedTo=row.AssignedTo,
-            DocumentPath=row.DocumentPath,
-            DocumentUrl=row.DocumentUrl,
-            Deadline=row.Deadline,
-            Priority=row.Priority,
-            Status=row.Status,
-            CreatedOn=row.CreatedOn,
-            CreatedBy=row.CreatedBy,
-            UpdatedOn=row.UpdatedOn,
-            UpdatedBy=row.UpdatedBy,
-            DeletedOn=row.DeletedOn,
-            DeletedBy=row.DeletedBy,
-            CompanyId=row.CompanyId,
-            Description=row.Description,
-            DocumentName=row.DocumentName,
-            ExptedHours=row.ExptedHours,
-            IsActive=bool(row.IsActive)
+            TaskId=row['TaskId'], # Access as dictionary key
+            Name=row['Name'],
+            ProjectId=row['ProjectId'],
+            AssignedTo=row['AssignedTo'],
+            DocumentPath=row['DocumentPath'],
+            DocumentUrl=row['DocumentUrl'],
+            Deadline=row['Deadline'],
+            Priority=row['Priority'],
+            Status=row['Status'],
+            CreatedOn=row['CreatedOn'],
+            CreatedBy=row['CreatedBy'],
+            UpdatedOn=row['UpdatedOn'],
+            UpdatedBy=row['UpdatedBy'],
+            DeletedOn=row['DeletedOn'],
+            DeletedBy=row['DeletedBy'],
+            CompanyId=row['CompanyId'],
+            Description=row['Description'],
+            DocumentName=row['DocumentName'],
+            ExptedHours=row['ExptedHours'],
+            IsActive=bool(row['IsActive']) # Convert 1/0 to bool
         )
 
-    except pyodbc.Error as e: # Catch specific pyodbc errors
+    except pymssql.Error as e: # Catch specific pymssql errors
         db.rollback() # Rollback on database error
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
@@ -97,12 +95,11 @@ def create_task(task: TaskCreate, db: pyodbc.Connection = Depends(get_connection
 
 ### Update Task
 @router.put("/tasks/{task_id}", response_model=TaskOut)
-def update_task(task_id: int, task: TaskUpdate, db: pyodbc.Connection = Depends(get_connection)):
+def update_task(task_id: int, task: TaskUpdate, db: pymssql.Connection = Depends(get_connection)):
     try:
-        cursor = db.cursor()
+        cursor = db.cursor(as_dict=True) # Create cursor with as_dict=True
 
-        # Parameters to cursor.execute must be a tuple/list
-        cursor.execute("SELECT 1 FROM Task WHERE TaskId = ? AND IsActive = 1", (task_id,))
+        cursor.execute("SELECT 1 FROM Task WHERE TaskId = %s AND IsActive = 1", (task_id,))
         if not cursor.fetchone():
             raise HTTPException(status_code=404, detail="Task not found or is inactive.")
 
@@ -130,58 +127,60 @@ def update_task(task_id: int, task: TaskUpdate, db: pyodbc.Connection = Depends(
             "Description": task.Description,
             "DocumentName": task.DocumentName,
             "ExptedHours": task.ExptedHours,
-            "IsActive": int(task.IsActive) if task.IsActive is not None else None, # Convert bool to int
+            "IsActive": int(task.IsActive) if task.IsActive is not None else None, # Convert bool to int for SQL Server BIT/TINYINT
             "CompanyId": task.CompanyId
         }
 
         for key, value in allowed_fields.items():
             if value is not None:
-                fields.append(f"{key} = ?")
+                fields.append(f"{key} = %s") # pymssql placeholder
                 params.append(value)
 
         if not fields:
             raise HTTPException(status_code=400, detail="No valid fields provided to update.")
 
         fields.append("UpdatedOn = GETDATE()")
-        fields.append("UpdatedBy = ?")
+        fields.append("UpdatedBy = %s") # pymssql placeholder
         params.append(task.UpdatedBy)
 
-        sql = f"UPDATE Task SET {', '.join(fields)} WHERE TaskId = ?"
-        # Pass all parameters as a single tuple/list
-        cursor.execute(sql, *params, task_id) # Corrected parameter passing for pyodbc
+        sql = f"UPDATE Task SET {', '.join(fields)} WHERE TaskId = %s" # pymssql placeholder
+        
+        # All parameters must be passed as a single tuple/list
+        final_params = tuple(params) + (task_id,) 
+        cursor.execute(sql, final_params)
         db.commit()
 
         # Fetch the updated task to return
-        cursor.execute("SELECT * FROM Task WHERE TaskId = ?", (task_id,))
+        cursor.execute("SELECT * FROM Task WHERE TaskId = %s", (task_id,))
         row = cursor.fetchone()
 
         if not row:
             raise HTTPException(status_code=404, detail="Task not found after update (unexpected error).")
 
         return TaskOut(
-            TaskId=row.TaskId,
-            Name=row.Name,
-            ProjectId=row.ProjectId,
-            AssignedTo=row.AssignedTo,
-            DocumentPath=row.DocumentPath,
-            DocumentUrl=row.DocumentUrl,
-            Deadline=row.Deadline,
-            Priority=row.Priority,
-            Status=row.Status,
-            CreatedOn=row.CreatedOn,
-            CreatedBy=row.CreatedBy,
-            UpdatedOn=row.UpdatedOn,
-            UpdatedBy=row.UpdatedBy,
-            DeletedOn=row.DeletedOn,
-            DeletedBy=row.DeletedBy,
-            CompanyId=row.CompanyId,
-            Description=row.Description,
-            DocumentName=row.DocumentName,
-            ExptedHours=row.ExptedHours,
-            IsActive=bool(row.IsActive)
+            TaskId=row['TaskId'],
+            Name=row['Name'],
+            ProjectId=row['ProjectId'],
+            AssignedTo=row['AssignedTo'],
+            DocumentPath=row['DocumentPath'],
+            DocumentUrl=row['DocumentUrl'],
+            Deadline=row['Deadline'],
+            Priority=row['Priority'],
+            Status=row['Status'],
+            CreatedOn=row['CreatedOn'],
+            CreatedBy=row['CreatedBy'],
+            UpdatedOn=row['UpdatedOn'],
+            UpdatedBy=row['UpdatedBy'],
+            DeletedOn=row['DeletedOn'],
+            DeletedBy=row['DeletedBy'],
+            CompanyId=row['CompanyId'],
+            Description=row['Description'],
+            DocumentName=row['DocumentName'],
+            ExptedHours=row['ExptedHours'],
+            IsActive=bool(row['IsActive'])
         )
 
-    except pyodbc.Error as e: # Catch specific pyodbc errors
+    except pymssql.Error as e: # Catch specific pymssql errors
         db.rollback() # Rollback on database error
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
@@ -191,23 +190,22 @@ def update_task(task_id: int, task: TaskUpdate, db: pyodbc.Connection = Depends(
 
 ### Delete Task (Soft Delete)
 @router.delete("/tasks/{task_id}", response_model=dict)
-def delete_task(task_id: int, deleted_by: int, db: pyodbc.Connection = Depends(get_connection)):
+def delete_task(task_id: int, deleted_by: int, db: pymssql.Connection = Depends(get_connection)):
     try:
-        cursor = db.cursor()
-        # Parameters to cursor.execute must be a tuple/list
-        cursor.execute("SELECT 1 FROM Task WHERE TaskId = ? AND IsActive = 1", (task_id,))
+        cursor = db.cursor() # Dictionary cursor not strictly needed here, but fine
+
+        cursor.execute("SELECT 1 FROM Task WHERE TaskId = %s AND IsActive = 1", (task_id,))
         if not cursor.fetchone():
             raise HTTPException(status_code=404, detail="Task not found or already deleted.")
 
         validate_user(cursor, deleted_by, "DeletedBy")
-        # Parameters to cursor.execute must be a tuple/list
         cursor.execute("""
-            UPDATE Task SET IsActive = 0, DeletedOn = GETDATE(), DeletedBy = ? WHERE TaskId = ?
-        """, (deleted_by, task_id))
+            UPDATE Task SET IsActive = 0, DeletedOn = GETDATE(), DeletedBy = %s WHERE TaskId = %s
+        """, (deleted_by, task_id)) # Pass parameters as a single tuple
         db.commit()
 
         return {"message": "Task deleted successfully"}
-    except pyodbc.Error as e: # Catch specific pyodbc errors
+    except pymssql.Error as e: # Catch specific pymssql errors
         db.rollback() # Rollback on database error
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
@@ -216,127 +214,126 @@ def delete_task(task_id: int, deleted_by: int, db: pyodbc.Connection = Depends(g
 
 ### List All Tasks
 @router.get("/alltasks", response_model=List[TaskOut])
-def list_tasks(db: pyodbc.Connection = Depends(get_connection)):
+def list_tasks(db: pymssql.Connection = Depends(get_connection)):
     try:
-        cursor = db.cursor()
+        cursor = db.cursor(as_dict=True) # Create cursor with as_dict=True
         cursor.execute("""
             SELECT * FROM Task WHERE IsActive = 1
         """)
-        rows = cursor.fetchall()
-        # pyodbc rows often support attribute access directly, so current mapping is fine.
+        rows = cursor.fetchall() # Returns list of dicts
+
         return [
             TaskOut(
-                TaskId=row.TaskId,
-                Name=row.Name,
-                ProjectId=row.ProjectId,
-                AssignedTo=row.AssignedTo,
-                DocumentPath=row.DocumentPath,
-                DocumentUrl=row.DocumentUrl,
-                Deadline=row.Deadline,
-                Priority=row.Priority,
-                Status=row.Status,
-                CreatedOn=row.CreatedOn,
-                CreatedBy=row.CreatedBy,
-                UpdatedOn=row.UpdatedOn,
-                UpdatedBy=row.UpdatedBy,
-                DeletedOn=row.DeletedOn,
-                DeletedBy=row.DeletedBy,
-                CompanyId=row.CompanyId,
-                Description=row.Description,
-                DocumentName=row.DocumentName,
-                ExptedHours=row.ExptedHours,
-                IsActive=bool(row.IsActive)
+                TaskId=row['TaskId'],
+                Name=row['Name'],
+                ProjectId=row['ProjectId'],
+                AssignedTo=row['AssignedTo'],
+                DocumentPath=row['DocumentPath'],
+                DocumentUrl=row['DocumentUrl'],
+                Deadline=row['Deadline'],
+                Priority=row['Priority'],
+                Status=row['Status'],
+                CreatedOn=row['CreatedOn'],
+                CreatedBy=row['CreatedBy'],
+                UpdatedOn=row['UpdatedOn'],
+                UpdatedBy=row['UpdatedBy'],
+                DeletedOn=row['DeletedOn'],
+                DeletedBy=row['DeletedBy'],
+                CompanyId=row['CompanyId'],
+                Description=row['Description'],
+                DocumentName=row['DocumentName'],
+                ExptedHours=row['ExptedHours'],
+                IsActive=bool(row['IsActive'])
             )
             for row in rows
         ]
-    except pyodbc.Error as e:
+    except pymssql.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
 ### Tasks by Assigned Employee
 @router.get("/tasks/by-assigned/{employee_id}", response_model=List[TaskOut])
-def get_tasks_by_assigned_employee(employee_id: int, db: pyodbc.Connection = Depends(get_connection)):
+def get_tasks_by_assigned_employee(employee_id: int, db: pymssql.Connection = Depends(get_connection)):
     try:
-        cursor = db.cursor()
-        # Parameters to cursor.execute must be a tuple/list
-        cursor.execute("SELECT * FROM Task WHERE AssignedTo = ? AND IsActive = 1", (employee_id,))
+        cursor = db.cursor(as_dict=True) # Create cursor with as_dict=True
+        cursor.execute("SELECT * FROM Task WHERE AssignedTo = %s AND IsActive = 1", (employee_id,))
         rows = cursor.fetchall()
         return [
             TaskOut(
-                TaskId=row.TaskId,
-                Name=row.Name,
-                ProjectId=row.ProjectId,
-                AssignedTo=row.AssignedTo,
-                DocumentPath=row.DocumentPath,
-                DocumentUrl=row.DocumentUrl,
-                Deadline=row.Deadline,
-                Priority=row.Priority,
-                Status=row.Status,
-                CreatedOn=row.CreatedOn,
-                CreatedBy=row.CreatedBy,
-                UpdatedOn=row.UpdatedOn,
-                UpdatedBy=row.UpdatedBy,
-                DeletedOn=row.DeletedOn,
-                DeletedBy=row.DeletedBy,
-                CompanyId=row.CompanyId,
-                Description=row.Description,
-                DocumentName=row.DocumentName,
-                ExptedHours=row.ExptedHours,
-                IsActive=bool(row.IsActive)
+                TaskId=row['TaskId'],
+                Name=row['Name'],
+                ProjectId=row['ProjectId'],
+                AssignedTo=row['AssignedTo'],
+                DocumentPath=row['DocumentPath'],
+                DocumentUrl=row['DocumentUrl'],
+                Deadline=row['Deadline'],
+                Priority=row['Priority'],
+                Status=row['Status'],
+                CreatedOn=row['CreatedOn'],
+                CreatedBy=row['CreatedBy'],
+                UpdatedOn=row['UpdatedOn'],
+                UpdatedBy=row['UpdatedBy'],
+                DeletedOn=row['DeletedOn'],
+                DeletedBy=row['DeletedBy'],
+                CompanyId=row['CompanyId'],
+                Description=row['Description'],
+                DocumentName=row['DocumentName'],
+                ExptedHours=row['ExptedHours'],
+                IsActive=bool(row['IsActive'])
             )
             for row in rows
         ]
-    except pyodbc.Error as e:
+    except pymssql.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 ### Tasks by Project Manager
 @router.get("/tasks/by-manager/{manager_id}", response_model=List[TaskOut])
-def get_tasks_by_project_manager(manager_id: int, db: pyodbc.Connection = Depends(get_connection)):
+def get_tasks_by_project_manager(manager_id: int, db: pymssql.Connection = Depends(get_connection)):
     try:
-        cursor = db.cursor()
+        cursor = db.cursor(as_dict=True) # Create cursor with as_dict=True
         query = """
             SELECT t.* FROM Task t
             INNER JOIN Projects p ON t.ProjectId = p.ProjectId
-            WHERE p.ProjectManager = ? AND t.IsActive = 1
+            WHERE p.ProjectManager = %s AND t.IsActive = 1
         """
-        # Parameters to cursor.execute must be a tuple/list
         cursor.execute(query, (manager_id,))
         rows = cursor.fetchall()
         return [
             TaskOut(
-                TaskId=row.TaskId,
-                Name=row.Name,
-                ProjectId=row.ProjectId,
-                AssignedTo=row.AssignedTo,
-                DocumentPath=row.DocumentPath,
-                DocumentUrl=row.DocumentUrl,
-                Deadline=row.Deadline,
-                Priority=row.Priority,
-                Status=row.Status,
-                CreatedOn=row.CreatedOn,
-                CreatedBy=row.CreatedBy,
-                UpdatedOn=row.UpdatedOn,
-                UpdatedBy=row.UpdatedBy,
-                DeletedOn=row.DeletedOn,
-                DeletedBy=row.DeletedBy,
-                CompanyId=row.CompanyId,
-                Description=row.Description,
-                DocumentName=row.DocumentName,
-                ExptedHours=row.ExptedHours,
-                IsActive=bool(row.IsActive)
+                TaskId=row['TaskId'],
+                Name=row['Name'],
+                ProjectId=row['ProjectId'],
+                AssignedTo=row['AssignedTo'],
+                DocumentPath=row['DocumentPath'],
+                DocumentUrl=row['DocumentUrl'],
+                Deadline=row['Deadline'],
+                Priority=row['Priority'],
+                Status=row['Status'],
+                CreatedOn=row['CreatedOn'],
+                CreatedBy=row['CreatedBy'],
+                UpdatedOn=row['UpdatedOn'],
+                UpdatedBy=row['UpdatedBy'],
+                DeletedOn=row['DeletedOn'],
+                DeletedBy=row['DeletedBy'],
+                CompanyId=row['CompanyId'],
+                Description=row['Description'],
+                DocumentName=row['DocumentName'],
+                ExptedHours=row['ExptedHours'],
+                IsActive=bool(row['IsActive'])
             )
             for row in rows
         ]
-    except pyodbc.Error as e:
+    except pymssql.Error as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 ### Paginated and Filtered Task Listing
 @router.post("/tasks/paginated/filter", response_model=Dict[str, Any])
-def get_filtered_paginated_tasks(pagination: TaskPaginationRequest, db: pyodbc.Connection = Depends(get_connection)):
+def get_filtered_paginated_tasks(pagination: TaskPaginationRequest, db: pymssql.Connection = Depends(get_connection)):
     try:
         page = pagination.page
         PageLimit = pagination.PageLimit
@@ -365,32 +362,30 @@ def get_filtered_paginated_tasks(pagination: TaskPaginationRequest, db: pyodbc.C
         params = []
 
         if project_name:
-            filters.append("p.Name LIKE ?")
+            filters.append("p.Name LIKE %s") # pymssql LIKE placeholder
             params.append(f"%{project_name}%")
         if task_name:
-            filters.append("t.Name LIKE ?")
+            filters.append("t.Name LIKE %s") # pymssql LIKE placeholder
             params.append(f"%{task_name}%")
         if assigned_to:
-            filters.append("t.AssignedTo = ?")
+            filters.append("t.AssignedTo = %s") # pymssql placeholder
             params.append(assigned_to)
         if priority:
-            filters.append("t.Priority = ?")
+            filters.append("t.Priority = %s") # pymssql placeholder
             params.append(priority)
         if manager_id:
-            filters.append("p.ProjectManager = ?")
+            filters.append("p.ProjectManager = %s") # pymssql placeholder
             params.append(manager_id)
 
         where_clause = ""
         if filters:
             where_clause = " AND " + " AND ".join(filters)
 
-        with db.cursor() as cursor:
+        with db.cursor(as_dict=True) as cursor: # Create cursor with as_dict=True
             # Execute count query
-            # All parameters must be passed as a single tuple/list
-            cursor.execute(count_query_base + where_clause, params)
+            cursor.execute(count_query_base + where_clause, tuple(params)) # Pass parameters as a tuple
             total_count_result = cursor.fetchone()
-            # Safely get total_count, handling if fetchone() returns None (though unlikely for COUNT(*))
-            total_count = total_count_result[0] if total_count_result else 0
+            total_count = total_count_result[''] if total_count_result else 0 # COUNT(*) result is often an empty string key in dicts
 
             if total_count == 0:
                 return {
@@ -403,41 +398,40 @@ def get_filtered_paginated_tasks(pagination: TaskPaginationRequest, db: pyodbc.C
 
             # Execute fetch query
             fetch_query = fetch_query_base + where_clause
-            fetch_query += " ORDER BY t.Deadline ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY"
-            # Combine all parameters for the fetch query into one list/tuple
-            final_params = params + [offset, PageLimit]
+            # SQL Server OFFSET/FETCH NEXT syntax remains the same
+            fetch_query += " ORDER BY t.Deadline ASC OFFSET %s ROWS FETCH NEXT %s ROWS ONLY"
+            
+            # Combine all parameters for the fetch query into one tuple
+            final_params = tuple(params) + (offset, PageLimit)
+            
             cursor.execute(fetch_query, final_params)
-            rows = cursor.fetchall() # This returns an empty list [] if no rows, which is iterable.
+            rows = cursor.fetchall() # Returns list of dicts
 
         data = []
         for row in rows:
-            # pyodbc row objects typically allow direct attribute access (row.ColumnName)
-            # Ensure datetime objects are converted to string if the frontend expects it,
-            # or if Pydantic's default JSON encoder has issues.
-            # Convert IsActive to boolean
             task_out_item = TaskOut(
-                TaskId=row.TaskId,
-                Name=row.Name,
-                ProjectId=row.ProjectId,
-                AssignedTo=row.AssignedTo,
-                DocumentPath=row.DocumentPath,
-                DocumentUrl=row.DocumentUrl,
-                Deadline=row.Deadline,
-                Priority=row.Priority,
-                Status=row.Status,
-                CreatedOn=row.CreatedOn,
-                CreatedBy=row.CreatedBy,
-                UpdatedOn=row.UpdatedOn,
-                UpdatedBy=row.UpdatedBy,
-                DeletedOn=row.DeletedOn,
-                DeletedBy=row.DeletedBy,
-                CompanyId=row.CompanyId,
-                Description=row.Description,
-                DocumentName=row.DocumentName,
-                ExptedHours=row.ExptedHours,
-                IsActive=bool(row.IsActive)
+                TaskId=row['TaskId'],
+                Name=row['Name'],
+                ProjectId=row['ProjectId'],
+                AssignedTo=row['AssignedTo'],
+                DocumentPath=row['DocumentPath'],
+                DocumentUrl=row['DocumentUrl'],
+                Deadline=row['Deadline'],
+                Priority=row['Priority'],
+                Status=row['Status'],
+                CreatedOn=row['CreatedOn'],
+                CreatedBy=row['CreatedBy'],
+                UpdatedOn=row['UpdatedOn'],
+                UpdatedBy=row['UpdatedBy'],
+                DeletedOn=row['DeletedOn'],
+                DeletedBy=row['DeletedBy'],
+                CompanyId=row['CompanyId'],
+                Description=row['Description'],
+                DocumentName=row['DocumentName'],
+                ExptedHours=row['ExptedHours'],
+                IsActive=bool(row['IsActive'])
             )
-            data.append(task_out_item.dict()) # Convert to dict for the overall response
+            data.append(task_out_item.dict())
 
         return {
             "data": data,
@@ -447,7 +441,12 @@ def get_filtered_paginated_tasks(pagination: TaskPaginationRequest, db: pyodbc.C
             "total_pages": (total_count + PageLimit - 1) // PageLimit
         }
 
-    except pyodbc.Error as e: # Catch specific pyodbc errors
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except pymssql.Error as e: # Catch specific pymssql errors
+        # Include more detail in the error message for debugging SQL errors
+        # Note: fetch_query and final_params might not be defined if error occurs early
+        error_detail = f"Database error: {str(e)}"
+        if 'fetch_query' in locals() and 'final_params' in locals():
+             error_detail += f". Query might be: {fetch_query} with parameters: {final_params}"
+        raise HTTPException(status_code=500, detail=error_detail)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
