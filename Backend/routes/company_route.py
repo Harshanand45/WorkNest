@@ -8,47 +8,21 @@ router = APIRouter()
 
 # ✅ Create a new company
 @router.post("/companies", response_model=Company)
-
 def create_company(comp: CompanyCreate):
     try:
         with get_connection() as conn:
-            with conn.cursor() as cursor:
-                query = """
-                SELECT 
-                    c.CompanyId,
-                    c.Name,
-                    c.Email,
-                    c.ContactNo,
-                    c.Address,
-                    c.IsActive,
-                    c.CreatedOn,
-                    c.UpdatedOn,
-                    c.DeletedOn,
-
-                    u1.UserId AS CreatedById,
-                    u1.Email AS CreatedByEmail,
-
-                    u2.UserId AS UpdatedById,
-                    u2.Email AS UpdatedByEmail,
-
-                    u3.UserId AS DeletedById,
-                    u3.Email AS DeletedByEmail
-
-                FROM TaskManager.dbo.Company c
-                LEFT JOIN TaskManager.dbo.Users u1 ON c.CreatedBy = u1.UserId
-                LEFT JOIN TaskManager.dbo.Users u2 ON c.UpdatedBy = u2.UserId
-                LEFT JOIN TaskManager.dbo.Users u3 ON c.DeletedBy = u3.UserId
-                """
-                cursor.execute(query)
-                cursor.execute("SELECT COUNT(*) FROM TaskManager.dbo.Company WHERE Name = ? OR Email = ?", (comp.name, comp.email))
-                existing_company = cursor.fetchone()[0]
+            with conn.cursor(as_dict=True) as cursor:
+                cursor.execute("SELECT COUNT(*) AS count FROM Company WHERE Name = %s OR Email = %s", (comp.name, comp.email))
+                existing_company = cursor.fetchone()['count']
                 if existing_company > 0:
                     raise HTTPException(status_code=400, detail="Company name or email already exists.")
 
                 cursor.execute(
-                    "INSERT INTO TaskManager.dbo.Company (Name, IsActive, CompanyDescription, CreatedBy, CompanyLogoName, CompanyLogoUrl, CompanyLogoPath, ContactNo, Email, Address) "
-                    "OUTPUT INSERTED.CompanyId, INSERTED.CreatedOn, INSERTED.CreatedBy "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    """
+                    INSERT INTO Company (Name, IsActive, CompanyDescription, CreatedBy, CompanyLogoName, CompanyLogoUrl, CompanyLogoPath, ContactNo, Email, Address, CreatedOn)
+                    OUTPUT INSERTED.CompanyId, INSERTED.CreatedOn, INSERTED.CreatedBy
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, GETDATE())
+                    """,
                     (comp.name, int(comp.is_active), comp.company_description, comp.created_by, comp.company_logo_name, 
                      comp.company_logo_url, comp.company_logo_path, comp.contact_no, comp.email, comp.address)
                 )
@@ -58,9 +32,9 @@ def create_company(comp: CompanyCreate):
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
     return {
-        "company_id": inserted_row[0],
-        "created_on": inserted_row[1].strftime("%Y-%m-%d %H:%M:%S") if inserted_row[1] else None,
-        "created_by": inserted_row[2],
+        "company_id": inserted_row['CompanyId'],
+        "created_on": inserted_row['CreatedOn'].strftime("%Y-%m-%d %H:%M:%S") if inserted_row['CreatedOn'] else None,
+        "created_by": inserted_row['CreatedBy'],
         "name": comp.name,
         "company_logo_name": comp.company_logo_name,
         "company_logo_url": comp.company_logo_url,
@@ -76,28 +50,28 @@ def create_company(comp: CompanyCreate):
 @router.get("/allcompanies", response_model=list[Company])
 def get_companies():
     with get_connection() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM TaskManager.dbo.Company")
+        with conn.cursor(as_dict=True) as cursor:
+            cursor.execute("SELECT * FROM Company")
             rows = cursor.fetchall()
 
     return [
         Company(
-            company_id=row[0],
-            name=row[1],
-            is_active=bool(row[2]),
-            company_description=str(row[3]) if row[3] is not None else None,
-            company_logo_name=row[10],
-            company_logo_url=row[11],
-            company_logo_path=row[12],
-            contact_no=row[13],
-            email=row[14],
-            address=row[15],
-            created_on=row[4].strftime("%Y-%m-%d %H:%M:%S") if isinstance(row[4], datetime) else None,
-            created_by=int(row[5]) if row[5] is not None else 0,
-            updated_on=row[6].strftime("%Y-%m-%d %H:%M:%S") if isinstance(row[6], datetime) else None,
-            updated_by=int(row[7]) if isinstance(row[7], int) else None,
-            deleted_on=row[8].strftime("%Y-%m-%d %H:%M:%S") if isinstance(row[8], datetime) else None,
-            deleted_by=int(row[9]) if row[9] and str(row[9]).isdigit() else None
+            company_id=row['CompanyId'],
+            name=row['Name'],
+            is_active=bool(row['IsActive']),
+            company_description=row.get('CompanyDescription'),
+            company_logo_name=row.get('CompanyLogoName'),
+            company_logo_url=row.get('CompanyLogoUrl'),
+            company_logo_path=row.get('CompanyLogoPath'),
+            contact_no=row.get('ContactNo'),
+            email=row.get('Email'),
+            address=row.get('Address'),
+            created_on=row['CreatedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('CreatedOn') else None,
+            created_by=row.get('CreatedBy', 0),
+            updated_on=row['UpdatedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('UpdatedOn') else None,
+            updated_by=row.get('UpdatedBy'),
+            deleted_on=row['DeletedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('DeletedOn') else None,
+            deleted_by=row.get('DeletedBy')
         )
         for row in rows
     ]
@@ -108,28 +82,21 @@ def update_company(company_id: int, comp: CompanyUpdate):
     try:
         with get_connection() as conn:
             with conn.cursor() as cursor:
-                # Check if company exists and is active
-                cursor.execute("""
-                    SELECT CompanyId, IsActive 
-                    FROM TaskManager.dbo.Company 
-                    WHERE CompanyId = ?
-                """, (company_id,))
+                cursor.execute("SELECT CompanyId, IsActive FROM Company WHERE CompanyId = %s", (company_id,))
                 existing_row = cursor.fetchone()
 
-                if not existing_row or existing_row.IsActive == 0:
+                if not existing_row or existing_row[1] == 0:
                     raise HTTPException(status_code=404, detail=f"Company with ID {company_id} not found.")
 
-                update_fields = [f"{field} = ?" for field in comp.dict(exclude_unset=True)]
+                update_fields = [f"{field} = %s" for field in comp.dict(exclude_unset=True)]
                 params = list(comp.dict(exclude_unset=True).values())
-
-                update_fields.append("UpdatedBy = ?")
+                update_fields.append("UpdatedBy = %s")
                 params.append(comp.updated_by)
                 update_fields.append("UpdatedOn = GETDATE()")
-
-                update_query = f"UPDATE TaskManager.dbo.Company SET {', '.join(update_fields)} WHERE CompanyId = ?"
+                update_query = f"UPDATE Company SET {', '.join(update_fields)} WHERE CompanyId = %s"
                 params.append(company_id)
 
-                cursor.execute(update_query, params)
+                cursor.execute(update_query, tuple(params))
                 conn.commit()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
@@ -138,18 +105,18 @@ def update_company(company_id: int, comp: CompanyUpdate):
 
 # ✅ Soft delete a company
 @router.delete("/companies/{company_id}")
-def delete_company(company_id: int,deleted_by: int):
+def delete_company(company_id: int, deleted_by: int):
     try:
         with get_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT CompanyId FROM TaskManager.dbo.Company WHERE CompanyId = ?", (company_id,))
+                cursor.execute("SELECT CompanyId FROM Company WHERE CompanyId = %s", (company_id,))
                 company_exists = cursor.fetchone()
 
                 if not company_exists:
                     raise HTTPException(status_code=404, detail=f"Company with ID {company_id} not found.")
 
                 cursor.execute(
-                    "UPDATE TaskManager.dbo.Company SET IsActive = 0, DeletedOn = GETDATE(), DeletedBy = ? WHERE CompanyId = ?",
+                    "UPDATE Company SET IsActive = 0, DeletedOn = GETDATE(), DeletedBy = %s WHERE CompanyId = %s",
                     (deleted_by, company_id)
                 )
                 conn.commit()
@@ -157,8 +124,6 @@ def delete_company(company_id: int,deleted_by: int):
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
     return {"message": f"Company {company_id} marked as deleted by user {deleted_by}."}
-
-
 
 @router.post("/companies/paginated", response_model=Dict[str, Any])
 def get_paginated_companies(pagination: CompanyPaginationRequest):
@@ -168,39 +133,36 @@ def get_paginated_companies(pagination: CompanyPaginationRequest):
         offset = (page - 1) * limit
 
         with get_connection() as conn:
-            with conn.cursor() as cursor:
-                # Total active company count
-                cursor.execute("SELECT COUNT(*) FROM TaskManager.dbo.Company WHERE IsActive = 1")
-                total_count = cursor.fetchone()[0]
+            with conn.cursor(as_dict=True) as cursor:
+                cursor.execute("SELECT COUNT(*) AS count FROM Company WHERE IsActive = 1")
+                total_count = cursor.fetchone()['count']
 
-                # Fetch paginated data
                 cursor.execute("""
-                    SELECT * FROM TaskManager.dbo.Company
+                    SELECT * FROM Company
                     WHERE IsActive = 1
                     ORDER BY CompanyId
-                    OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                    OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
                 """, (offset, limit))
-
                 rows = cursor.fetchall()
 
         data = [
             Company(
-                company_id=row[0],
-                name=row[1],
-                is_active=bool(row[2]),
-                company_description=str(row[3]) if row[3] is not None else None,
-                company_logo_name=row[10],
-                company_logo_url=row[11],
-                company_logo_path=row[12],
-                contact_no=row[13],
-                email=row[14],
-                address=row[15],
-                created_on=row[4].strftime("%Y-%m-%d %H:%M:%S") if isinstance(row[4], datetime) else None,
-                created_by=int(row[5]) if row[5] is not None else 0,
-                updated_on=row[6].strftime("%Y-%m-%d %H:%M:%S") if isinstance(row[6], datetime) else None,
-                updated_by=int(row[7]) if isinstance(row[7], int) else None,
-                deleted_on=row[8].strftime("%Y-%m-%d %H:%M:%S") if isinstance(row[8], datetime) else None,
-                deleted_by=int(row[9]) if row[9] and str(row[9]).isdigit() else None
+                company_id=row['CompanyId'],
+                name=row['Name'],
+                is_active=bool(row['IsActive']),
+                company_description=row.get('CompanyDescription'),
+                company_logo_name=row.get('CompanyLogoName'),
+                company_logo_url=row.get('CompanyLogoUrl'),
+                company_logo_path=row.get('CompanyLogoPath'),
+                contact_no=row.get('ContactNo'),
+                email=row.get('Email'),
+                address=row.get('Address'),
+                created_on=row['CreatedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('CreatedOn') else None,
+                created_by=row.get('CreatedBy', 0),
+                updated_on=row['UpdatedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('UpdatedOn') else None,
+                updated_by=row.get('UpdatedBy'),
+                deleted_on=row['DeletedOn'].strftime("%Y-%m-%d %H:%M:%S") if row.get('DeletedOn') else None,
+                deleted_by=row.get('DeletedBy')
             ).dict()
             for row in rows
         ]
